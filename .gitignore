@@ -362,3 +362,11 @@ Temporary Items
 *.atsln
 *.componentinfo.xml
 *.cppproj
+
+#Embeded c extensions
+
+*.bin
+*.eep
+*.lss
+*.srec
+        new file:   Debug/makedep.mk
