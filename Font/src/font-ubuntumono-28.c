@@ -7,8 +7,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "fontem.h"
-#include "font-ubuntumono-28.h"
+#include "../include/fontem.h"
+#include "../include/font-ubuntumono-28.h"
 
 /* Character list: !@#$%^&*()_+-={}|[]\:";'<>?,./`~ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ÄÖÜßäöü */
 

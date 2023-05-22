@@ -6,7 +6,7 @@
 */
 
 
-#include "PINDriver.h"
+#include "../include/PINDriver.h"
 
 // default constructor
 PINDriver::PINDriver(Pio * port, int pin):

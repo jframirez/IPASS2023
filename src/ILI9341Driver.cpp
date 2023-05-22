@@ -6,7 +6,7 @@
 */
 
 
-#include "ILI9341Driver.h"
+#include "../include/ILI9341Driver.h"
 
 uint16_t operator>>(ILI_COLORS lhs, uint shift){
 	return ((uint16_t)lhs >> shift);

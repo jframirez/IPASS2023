@@ -11,15 +11,15 @@
 
 #include "ILI9341Commands.h"
 
-#include "Helper.h"
+#include "../include/Helper.h"
 
-#include "Font/font-ubuntumono-10.h"
+#include "../Font/include/font-ubuntumono-10.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "PINDriver.h"
-#include "SPIDriver.h"
+#include "../include/PINDriver.h"
+#include "../include/SPIDriver.h"
 //Always in 4-wire 8-bit data serial interface
 //Define memory definitions
 //typedef enum ILI9341Commands{

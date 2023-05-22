@@ -6,7 +6,7 @@
 */
 
 
-#include "SPIDriver.h"
+#include "../include/SPIDriver.h"
 #include "sam3xa.h"
 
 // default constructor

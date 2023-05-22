@@ -11,21 +11,21 @@
 
 #include "component/pio.h"
 
-#include "SPIDriver.h"
-#include "PINDriver.h"
-#include "ILI9341Driver.h"
+#include "../include/SPIDriver.h"
+#include "../include/PINDriver.h"
+#include "../include/ILI9341Driver.h"
 
-#include "LED.h"
-#include "Helper.h"
+#include "../include/LED.h"
+#include "../include/Helper.h"
 
-#include "Font/font-ubuntumono-10.h"
-#include "Font/font-ubuntumono-16.h"
-#include "Font/font-ubuntumono-22.h"
-#include "Font/font-ubuntumono-28.h"
-#include "Font/font-ubuntumono-34.h"
-#include "Font/font-ubuntumono-40.h"
+#include "../Font/include/font-ubuntumono-10.h"
+#include "../Font/include/font-ubuntumono-16.h"
+#include "../Font/include/font-ubuntumono-22.h"
+#include "../Font/include/font-ubuntumono-28.h"
+#include "../Font/include/font-ubuntumono-34.h"
+#include "../Font/include/font-ubuntumono-40.h"
 
-#include "Img/TestJPG.h"
+#include "../Img/include/TestJPG.h"
 
 
 int main(void)
