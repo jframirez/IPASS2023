@@ -369,4 +369,4 @@ Temporary Items
 *.eep
 *.lss
 *.srec
-        new file:   Debug/makedep.mk
+*.mk
