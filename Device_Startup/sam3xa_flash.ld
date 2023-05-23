@@ -131,6 +131,8 @@ SECTIONS
         . = . + HEAP_SIZE;
         . = ALIGN(8);
         _eheap = .;
+		heap_end = _eheap;
+		end = heap_end;
     } > ram
 
     . = ALIGN(4);

@@ -33,6 +33,7 @@ namespace Helper{
 	
 	namespace Debug{
 		void DebugPrint(const char * pString, ... );
+		void DebugPrintEX(const char * pString, ... );
 		void DebugPrint(char pString);
 	}
 }

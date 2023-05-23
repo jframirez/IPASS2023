@@ -6,13 +6,17 @@
  */ 
 #include "sam.h"
 #include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <cstdarg>
 
 #include "component/pio.h"
 
 #include "../include/SPIDriver.h"
 #include "../include/PINDriver.h"
+#include "MenuManager.h"
 #include "../include/ILI9341Driver.h"
 
 #include "../include/LED.h"
@@ -27,6 +31,8 @@
 
 #include "../Img/include/TestJPG.h"
 
+#include "MenuManager.h"
+#include "menuPageSplash.h"
 
 int main(void)
 {
@@ -149,161 +155,45 @@ int main(void)
 	//
 	ILI9341Driver LCD(DisplaySS, DisplayDC, DisplayRESET, LCDSpi);
 	
-	//Fill LCD black
-	LCD.SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);
-	LCD.SendStartCont();
-	LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-	for (uint i = 0; i < LCD.max_pixel_count; ++i){
-		LCD.SendDataCont16_t(ILI_COLORS::BLACK);
-	}
-	LCD.SendEndCont();
+	
+	
+	//const char TTline[] = "abcd";
+	//Helper::Debug::DebugPrintEX("TEST: %i\r\n", 12);
+	//Helper::Debug::DebugPrintEX("TEST: %i\r\n", 12);
+	
+	
 	
 	//Fill from bitmapArray
-	LCD.SendStartCont();
-	LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-	for (int i = 0; i < TestJPGLenght; ++i){
-		LCD.SendDataCont16_t(TestJPG[i]);
-		//16 pixels per
-		/* This can be used for compressed format whit predefined colors
-		for(uint j = 8; j > 0 ; --j){ // High bit -> Low bit
-			if(bitmapArray[i] & (1 << (j -1))){ 
-				LCD.SendDataCont16_t(ILI_COLORS::WHITE);
-			}else{
-				LCD.SendDataCont16_t(ILI_COLORS::BLACK);
-			}
-		}*/
-	}
-	LCD.SendEndCont();
+// 	LCD.SendStartCont();
+// 	LCD.SendCommandCont(ILI9341CMD_Memory_Write);
+// 	for (uint i = 0; i < menuPageSplash.bitmapLenght; ++i){
+// 		LCD.SendDataCont16_t(menuPageSplash.menuBitmap[i]);
+// 		//16 pixels per
+// 		/* This can be used for compressed format whit predefined colors
+// 		for(uint j = 8; j > 0 ; --j){ // High bit -> Low bit
+// 			if(bitmapArray[i] & (1 << (j -1))){ 
+// 				LCD.SendDataCont16_t(ILI_COLORS::WHITE);
+// 			}else{
+// 				LCD.SendDataCont16_t(ILI_COLORS::BLACK);
+// 			}
+// 		}*/
+// 	}
+// 	
+// 	LCD.SendEndCont();
 	
 	//LCD.SetRotation(ILI_ROTATION_MODE::PORTRAIT, false, true);
-	LCD.SendStartCont();
 	
-	//set caset
-	LCD.SendCommandCont(ILI9341CMD_Column_Address_Set);
-	//start is 50 and end is width - 50;
-	LCD.SendDataCont16_t(50); //start
-	LCD.SendDataCont16_t((LCD.width - 50) -1); //end
+	//LCD.SetRotation((ILI_ROTATION_MODE)menuPageSplash.rotation, false, false);
 	
-	//set paset
-	LCD.SendCommandCont(ILI9341CMD_Page_Address_Set);
-	//set paset to start 120
-	// end is max
-	LCD.SendDataCont16_t(120); //start
-	LCD.SendDataCont16_t(LCD.height -1); //end
+	MenuManager p1Screen(LCD);
 	
-	LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-	
-	LCD.SendEndCont();
-	
-	LCD.colStart = 50;
-	LCD.colEnd = LCD.width - 50;
-	LCD.colLenght = LCD.colEnd - LCD.colStart;
-	
-	LCD.rowStart = 120;
-	LCD.rowEnd = LCD.height;
-	LCD.rowLenght = LCD.rowEnd - LCD.rowStart;
-
-	//char buffer[256]; -> can be used in the future
-	//uint offset_width = 0;
-	uint offset_height = 0;
-	
-	uint fullHeightOffset = LCD.rowStart;
-	uint8_t currentGlyph;
-	uint bufferPrintOffset = 0;
-	uint glyphCounter = 0;
-	
-	ILI_COLORS backgroundFill = ILI_COLORS::BLACK;
-
-	const char testLine[] = "JFR P1 Meter  - V1.0 -\nIPASS 2023";
-	uint lineLenghtGlyphs = sizeof(testLine) / sizeof(char);
-	
-	font curFont = font_ubuntumono_22;
-	uint curResize = curFont.height - curFont.size; // 16
-	
-	LCD.SendStartCont();
-	LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-	
-	do{
-		offset_height = 0;
-		for (int i = 0; i < curFont.height; ++i){
-			
-			glyphCounter = 0;
-			currentGlyph = testLine[glyphCounter + bufferPrintOffset]; ///initial buffer pos for line.
-
-			uint line_lenght = 0;
-			//for all glyphs
-			while(line_lenght <= LCD.colLenght){	
-			
-				if((currentGlyph == '\0') | (currentGlyph == '\n')){ //special chars, these chars do not get printed, \r could be supported but would need to reset all offsets
-					//fill line
-					for(uint k = 0; k < (LCD.colLenght - line_lenght); ++k){
-						LCD.SendDataCont16_t(backgroundFill); //BACKGROUND FILL
-					}
-					glyphCounter += 1;
-					break;
-				}else{
-					currentGlyph = currentGlyph - ' ';
-					line_lenght += curFont.glyphs[currentGlyph]->advance;
-				}
-				//offset_width += font_UbuntuMonoB_10.glyphs[currentGlyph]->cols;	
-				if(line_lenght <= (LCD.colLenght - 1 )){ //should be <= but for testing
-					int col_offset = curFont.glyphs[currentGlyph]->cols;
-					
-					//print left blanking .left 
-					for(int leftC = 0; leftC < curFont.glyphs[currentGlyph]->left; ++leftC){
-						//line_lenght += 1;
-						LCD.SendDataCont16_t(backgroundFill);
-					}
-						
-					for (int j = 0; j < col_offset; ++j){
-						int lineCheckBackFill = (curFont.height - offset_height) - (curFont.glyphs[currentGlyph]->top + curResize);
-						int lineCheckPrint = offset_height - (curFont.height - (curFont.glyphs[currentGlyph]->top + curResize));
-						if(lineCheckBackFill > 0){
-							LCD.SendDataCont16_t(backgroundFill); //BACKGROUND FILL
-						}else if (lineCheckPrint < curFont.glyphs[currentGlyph]->rows){
-							uint8_t grayscale = curFont.glyphs[currentGlyph]->bitmap[j + (lineCheckPrint * curFont.glyphs[currentGlyph]->cols)];
-							// divide grayscale glyph by R >> 3, G >> 2, B >> 3
-							uint16_t RGB = ( (0xF800 & ((grayscale >> 3) << 11)) | (0x07E0 & ((grayscale >> 2) << 5)) | (0x001F & (grayscale >> 3)) );
-							LCD.SendDataCont16_t(RGB);
-							//0xF800 - R mask, 0x07E0 - G mask, 0x001F - B mask
-						}else{
-							LCD.SendDataCont16_t(backgroundFill); //BACKGROUND FILL
-						}
-					}				
-					//print right blanking .advance - (.left + .col)
-					for(int leftC = 0; leftC < (curFont.glyphs[currentGlyph]->advance - (curFont.glyphs[currentGlyph]->left + curFont.glyphs[currentGlyph]->cols)); ++leftC){
-						LCD.SendDataCont16_t(backgroundFill);
-					}
-				}else{
-					//send empty to fill line width or fill empty space in assigned field
-					for(uint k = 0; k < (LCD.colLenght - (line_lenght - (curFont.glyphs[currentGlyph]->advance)) ); ++k){
-						LCD.SendDataCont16_t(backgroundFill); //BACKGROUND FILL
-					}
-					break;
-				}
-			
-				glyphCounter += 1;
-				currentGlyph = testLine[glyphCounter + bufferPrintOffset];
-			}
-			offset_height += 1;
-			fullHeightOffset += 1;
-			if(fullHeightOffset >= LCD.rowEnd){
-				break; //Break immediate on end of buffer
-			}
-		}
-		bufferPrintOffset += glyphCounter;
-		if(fullHeightOffset >= LCD.rowEnd){
-			break; //If buffer is on last row break
-		}
-	} while (bufferPrintOffset < lineLenghtGlyphs); // 57 < 78
-	
-	LCD.SendEndCont();
+	p1Screen.SetMenu(&menuPageSplash);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_22, "TEST PRINT");
+	int iTest = -10;
+	p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
 
 	
 	
-	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
-	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
-	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
     while (1){
@@ -313,31 +203,34 @@ int main(void)
 				debugLED1.OFF();
 				LEDState = false;
 				
-				LCD.SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);
-				LCD.SendStartCont();
-				LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-				for (uint i = 0; i < LCD.max_pixel_count; ++i){
-					LCD.SendDataCont16_t(ILI_COLORS::RED);
-				}
-				LCD.SendEndCont();
+// 				LCD.SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);
+// 				LCD.SendStartCont();
+// 				LCD.SendCommandCont(ILI9341CMD_Memory_Write);
+// 				for (uint i = 0; i < LCD.max_pixel_count; ++i){
+// 					LCD.SendDataCont16_t(ILI_COLORS::RED);
+// 				}
+// 				LCD.SendEndCont();
 				
 			}else{
 				debugLED1.ON();
 				LEDState = true;
 				
-				LCD.SetRotation(ILI_ROTATION_MODE::PORTRAIT, false, true);
-				LCD.SendStartCont();
-				LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-				for (uint i = 0; i < LCD.max_pixel_count; ++i){
-					LCD.SendDataCont16_t(ILI_COLORS::BLUE);
-				}
-				LCD.SendEndCont();
+// 				LCD.SetRotation(ILI_ROTATION_MODE::PORTRAIT, false, true);
+// 				LCD.SendStartCont();
+// 				LCD.SendCommandCont(ILI9341CMD_Memory_Write);
+// 				for (uint i = 0; i < LCD.max_pixel_count; ++i){
+// 					LCD.SendDataCont16_t(ILI_COLORS::BLUE);
+// 				}
+// 				LCD.SendEndCont();
 			}
 			debugLED2.ON();
 			startTime = TC2->TC_CHANNEL[2].TC_CV;
 			
 			//Test uart
 			Helper::Debug::DebugPrint("TEST PRINT\r\n");
+			iTest +=1;
+			p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
+			
 		}	
 	}
 }

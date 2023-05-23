@@ -46,6 +46,6 @@ MEMORY
 STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : 0x400;
 
 /* The heapsize used by the application. NOTE: you need to adjust according to your application. */
-HEAP_SIZE = DEFINED(HEAP_SIZE) ? HEAP_SIZE : 0x200;
+HEAP_SIZE = DEFINED(HEAP_SIZE) ? HEAP_SIZE : 0x2000;
 
 INCLUDE sam3xa_flash.ld
