@@ -72,6 +72,23 @@ namespace Helper{
 			
 			*/
 		}
+		
+		void DebugPrintEX(const char * pString, ... ){
+			char buffer[200]; //make sure to not make this go beyond heap size
+			char * bufferP = buffer;
+			va_list args;
+			va_start(args, pString);
+			vsnprintf(buffer, 20, pString, args);
+			va_end(args);
+
+			while( *bufferP != '\0'){
+				UART->UART_THR = *bufferP;
+				while(!(UART->UART_SR & UART_SR_TXEMPTY)){}
+				++bufferP;
+			}
+		}
+		
+		
 	}
 }
 	
