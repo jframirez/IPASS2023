@@ -115,8 +115,6 @@ int main(void)
 	SPI0_MOSI.PeripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_A);
 	SPI0_SPCK.PeripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_A);
 
-	//unsigned int delay1S = 656254;
-	//Helper::delay1_5us(delay1S);
 	bool LEDState = false;
 	//bool one_shot = true;
 	unsigned int startTime = TC2->TC_CHANNEL[2].TC_CV;
@@ -142,48 +140,13 @@ int main(void)
 	//wait for UART ready
 	while(!(UART->UART_SR & UART_SR_TXRDY)){}
 	
-	
-	
-	//UART->UART_THR = 'a';
-	
-	
 	Helper::Debug::DebugPrint("TEST PRINT\r\n");
-	
+
 	//SPI0
 	SPIDriver LCDSpi(SPI0_MISO, SPI0_MOSI, SPI0_SPCK, false, false, SPI0);
 	
 	//
 	ILI9341Driver LCD(DisplaySS, DisplayDC, DisplayRESET, LCDSpi);
-	
-	
-	
-	//const char TTline[] = "abcd";
-	//Helper::Debug::DebugPrintEX("TEST: %i\r\n", 12);
-	//Helper::Debug::DebugPrintEX("TEST: %i\r\n", 12);
-	
-	
-	
-	//Fill from bitmapArray
-// 	LCD.SendStartCont();
-// 	LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-// 	for (uint i = 0; i < menuPageSplash.bitmapLenght; ++i){
-// 		LCD.SendDataCont16_t(menuPageSplash.menuBitmap[i]);
-// 		//16 pixels per
-// 		/* This can be used for compressed format whit predefined colors
-// 		for(uint j = 8; j > 0 ; --j){ // High bit -> Low bit
-// 			if(bitmapArray[i] & (1 << (j -1))){ 
-// 				LCD.SendDataCont16_t(ILI_COLORS::WHITE);
-// 			}else{
-// 				LCD.SendDataCont16_t(ILI_COLORS::BLACK);
-// 			}
-// 		}*/
-// 	}
-// 	
-// 	LCD.SendEndCont();
-	
-	//LCD.SetRotation(ILI_ROTATION_MODE::PORTRAIT, false, true);
-	
-	//LCD.SetRotation((ILI_ROTATION_MODE)menuPageSplash.rotation, false, false);
 	
 	MenuManager p1Screen(LCD);
 	
@@ -192,8 +155,7 @@ int main(void)
 	int iTest = -10;
 	p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
 
-	
-	
+
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
     while (1){
@@ -203,25 +165,10 @@ int main(void)
 				debugLED1.OFF();
 				LEDState = false;
 				
-// 				LCD.SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);
-// 				LCD.SendStartCont();
-// 				LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-// 				for (uint i = 0; i < LCD.max_pixel_count; ++i){
-// 					LCD.SendDataCont16_t(ILI_COLORS::RED);
-// 				}
-// 				LCD.SendEndCont();
-				
 			}else{
 				debugLED1.ON();
 				LEDState = true;
 				
-// 				LCD.SetRotation(ILI_ROTATION_MODE::PORTRAIT, false, true);
-// 				LCD.SendStartCont();
-// 				LCD.SendCommandCont(ILI9341CMD_Memory_Write);
-// 				for (uint i = 0; i < LCD.max_pixel_count; ++i){
-// 					LCD.SendDataCont16_t(ILI_COLORS::BLUE);
-// 				}
-// 				LCD.SendEndCont();
 			}
 			debugLED2.ON();
 			startTime = TC2->TC_CHANNEL[2].TC_CV;
