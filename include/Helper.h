@@ -13,6 +13,7 @@
 #include "sam.h"
 #include <cstdarg>
 #include <cstdio>
+#include <string>
 
 namespace Helper{
 	
@@ -34,6 +35,7 @@ namespace Helper{
 	namespace Debug{
 		void DebugPrint(const char * pString, ... );
 		void DebugPrintEX(const char * pString, ... );
+		void DebugPrintEXSTRING(std::string const & x);
 		void DebugPrint(char pString);
 	}
 }

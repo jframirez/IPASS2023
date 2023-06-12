@@ -78,8 +78,18 @@ namespace Helper{
 			char * bufferP = buffer;
 			va_list args;
 			va_start(args, pString);
-			vsnprintf(buffer, 20, pString, args);
+			vsnprintf(buffer, 200, pString, args);
 			va_end(args);
+
+			while( *bufferP != '\0'){
+				UART->UART_THR = *bufferP;
+				while(!(UART->UART_SR & UART_SR_TXEMPTY)){}
+				++bufferP;
+			}
+		}
+		
+		void DebugPrintEXSTRING(std::string const &x){
+			const char * bufferP = x.c_str();
 
 			while( *bufferP != '\0'){
 				UART->UART_THR = *bufferP;

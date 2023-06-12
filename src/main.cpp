@@ -4,6 +4,10 @@
  * Created: 29-4-2023 21:07:28
  * Author : Jordan
  */ 
+
+
+
+
 #include "sam.h"
 #include <stdio.h>
 #include <cstdio>
@@ -11,6 +15,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <cstdarg>
+#include <string>
 
 #include "component/pio.h"
 
@@ -33,6 +38,10 @@
 
 #include "MenuManager.h"
 #include "menuPageSplash.h"
+
+//#include "P1Controller.h"
+
+#include "P1Decoder.h"
 
 int main(void)
 {
@@ -141,6 +150,11 @@ int main(void)
 	while(!(UART->UART_SR & UART_SR_TXRDY)){}
 	
 	Helper::Debug::DebugPrint("TEST PRINT\r\n");
+	
+	
+	//P1Controller::decodeP1(testP1Telegram);
+	
+	Helper::Debug::DebugPrint("TEST PRINT2\r\n");
 
 	//SPI0
 	SPIDriver LCDSpi(SPI0_MISO, SPI0_MOSI, SPI0_SPCK, false, false, SPI0);
@@ -148,13 +162,28 @@ int main(void)
 	//
 	ILI9341Driver LCD(DisplaySS, DisplayDC, DisplayRESET, LCDSpi);
 	
-	MenuManager p1Screen(LCD);
+	//MenuManager p1Screen(LCD);
 	
-	p1Screen.SetMenu(&menuPageSplash);
-	p1Screen.WriteTextLabel(0, font_ubuntumono_22, "TEST PRINT");
-	int iTest = -10;
-	p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
+	//p1Screen.SetMenu(&menuPageSplash);
+	//p1Screen.WriteTextLabel(0, font_ubuntumono_22, "TEST PRINT");
+	//int iTest = -10;
+	//p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
+	
+	P1Decoder p1msg;
 
+	int P1DecodeValue = P1Decoder::decodeP1(testP1Telegram, p1msg.OBISChannelList, p1msg);
+
+	std::list<OBISChannel*>::iterator it;
+	if(P1DecodeValue == 0){
+		for(auto &ptr: p1msg.OBISChannelList){
+			Helper::Debug::DebugPrintEX("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
+			//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
+			for(auto &Optr: ptr->getOBISObjectList()){
+				Helper::Debug::DebugPrintEXSTRING(Optr->print());
+				Helper::Debug::DebugPrintEX("\r\n");
+			}
+		}	
+	}
 
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
@@ -174,9 +203,9 @@ int main(void)
 			startTime = TC2->TC_CHANNEL[2].TC_CV;
 			
 			//Test uart
-			Helper::Debug::DebugPrint("TEST PRINT\r\n");
-			iTest +=1;
-			p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
+			//Helper::Debug::DebugPrint("TEST PRINT\r\n");
+			//iTest +=1;
+			//p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
 			
 		}	
 	}
