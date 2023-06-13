@@ -68,7 +68,6 @@ static const char * getOBISTypeString(OBISType t){
 	switch (t){
 		case OBISType::Version:
 		return "Version information";
-		break;
 		case OBISType::Power:
 		return "Meter reading (Tariff 1)";
 		case OBISType::Timestamp:
@@ -155,6 +154,7 @@ class OBISObject{ //pure virtual class
 	virtual ~OBISObject() = default;
 	virtual bool operator== (const OBISObject &o) = 0;
 	virtual std::string print() = 0;
+	virtual std::string printValue() = 0;
 };
 
 
@@ -165,8 +165,6 @@ class OBISObjectVersion : public OBISObject{
 	int versionDecimal = 0;
 
 	public:
-	
-
 	OBISType getType() const{
 		return OBISType::Version;
 	}
@@ -180,7 +178,16 @@ class OBISObjectVersion : public OBISObject{
 	}
 
 	std::string print(){
-		return std::string("DSMR Version: " + std::to_string(versionMain) + "." + std::to_string(versionDecimal));
+		return std::string(	"DSMR Version: "
+		+ std::to_string(versionMain)
+		+ "."
+		+ std::to_string(versionDecimal));
+	}
+
+	std::string printValue(){
+		return std::string(	std::to_string(versionMain)
+		+ "."
+		+ std::to_string(versionDecimal));
 	}
 
 	OBISObjectVersion(int m, int d){
@@ -189,7 +196,6 @@ class OBISObjectVersion : public OBISObject{
 	}
 
 	~OBISObjectVersion(){
-		//std::cout << "OBIS OBJECT GETTING DELETED," << this->print() << std::endl;
 	}
 };
 
@@ -223,7 +229,6 @@ class OBISObjectFloatingDecimal : public OBISObject{
 	}
 
 	bool operator==(const OBISObject &o){
-		////std::cout << "COMPARING OBISObject" << std::endl;
 		if(o.getType() == this->getType()){
 			return true;
 		}
@@ -234,7 +239,17 @@ class OBISObjectFloatingDecimal : public OBISObject{
 		char buf[20];
 		sprintf(buf, formatP, value);
 
-		return std::string(getOBISTypeString(getType()) + std::string(": ") + buf + unitText);
+		return std::string(	getOBISTypeString(getType())
+		+ std::string(": ")
+		+ buf
+		+ unitText);
+	}
+
+	std::string printValue(){
+		char buf[20];
+		sprintf(buf, formatP, value);
+
+		return std::string(buf + getUnitString());
 	}
 
 	OBISObjectFloatingDecimal(OBISType t, T v, const char * f, const char * unit = ""){
@@ -245,7 +260,6 @@ class OBISObjectFloatingDecimal : public OBISObject{
 	}
 
 	~OBISObjectFloatingDecimal(){
-		//std::cout << "OBIS OBJECT GETTING DELETED," << this->print() << std::endl;
 	}
 };
 
@@ -261,7 +275,6 @@ class OBISObjectString : public OBISObject{
 	}
 
 	bool operator==(const OBISObject &o){
-		// ///std::cout << "COMPARING OBISObject" << std::endl;
 		if(o.getType() == this->getType()){
 			return true;
 		}
@@ -269,7 +282,14 @@ class OBISObjectString : public OBISObject{
 	}
 
 	std::string print(){
-		return std::string(getOBISTypeString(getType()) + std::string(": ") + s);
+		return std::string(	getOBISTypeString(getType())
+		+ std::string(": ")
+		+ s);
+	}
+
+	std::string printValue(){
+		return std::string(s); //Copy to keep temporary on stack
+		//Might work without copy
 	}
 
 	OBISObjectString(OBISType t, std::string inputS){
@@ -278,7 +298,6 @@ class OBISObjectString : public OBISObject{
 	}
 
 	~OBISObjectString(){
-		//std::cout << "OBIS OBJECT GETTING DELETED," << this->print() << std::endl;
 	}
 };
 
@@ -308,12 +327,22 @@ class OBISObjectTST : public OBISObject{
 	}
 
 	std::string print(){
-		return std::string(getOBISTypeString(getType()) + std::string(": ") + std::to_string(year)
+		return std::string(	getOBISTypeString(getType()) + std::string(": ")
+		+ std::to_string(year)
 		+ std::string(":") + std::to_string(month)
 		+ std::string(":") + std::to_string(day)
 		+ std::string(":") + std::to_string(hour)
 		+ std::string(":") + std::to_string(min)
 		+ std::string(":") + std::to_string(sec));
+	}
+
+	std::string printValue(){
+		return std::string(	  std::string("Y") + std::to_string(year)
+		+ std::string("M") + std::to_string(month)
+		+ std::string("D") + std::to_string(day)
+		+ std::string("H") + std::to_string(hour)
+		+ std::string("m") + std::to_string(min)
+		+ std::string("s") + std::to_string(sec));
 	}
 
 	OBISObjectTST(OBISType t, int y, int MM, int d, int h, int m, int s){
@@ -327,14 +356,8 @@ class OBISObjectTST : public OBISObject{
 	}
 
 	~OBISObjectTST(){
-		//std::cout << "OBIS OBJECT GETTING DELETED," << this->print() << std::endl;
 	}
 };
-
-// struct PowerFailureEventObj{
-// 	OBISObjectTST * timestamp;
-// 	OBISObjectFloatingDecimal<int> * duration;
-// };
 
 struct PowerFailureEventObj{
 	OBISObject * timestamp;
@@ -363,13 +386,24 @@ class OBISPowerFailureEventLog : public OBISObject{
 	std::string print(){
 		std::string combinedLogPrint;
 
-		combinedLogPrint.append(getOBISTypeString(getType()) + std::string(":\r\n"));
+		combinedLogPrint.append(getOBISTypeString(getType()) + std::string(":"));
 
 		for(const auto &Optr: log){
-			combinedLogPrint.append("\t");
+			combinedLogPrint.append("\r\n\t");
 			combinedLogPrint.append(Optr.timestamp->print());
 			combinedLogPrint.append("\r\n\t");
 			combinedLogPrint.append(Optr.duration->print());
+		}
+		return combinedLogPrint;
+	}
+
+	std::string printValue(){
+		std::string combinedLogPrint;
+
+		for(const auto &Optr: log){
+			combinedLogPrint.append(Optr.timestamp->printValue());
+			combinedLogPrint.append(",");
+			combinedLogPrint.append(Optr.duration->printValue());
 			combinedLogPrint.append("\r\n");
 		}
 		return combinedLogPrint;
@@ -387,11 +421,9 @@ class OBISPowerFailureEventLog : public OBISObject{
 	}
 
 	~OBISPowerFailureEventLog(){
-		//std::cout << "OBIS OBJECT GETTING DELETED," << this->print() << std::endl;
-
 		std::list<PowerFailureEventObj>::iterator it = log.begin();
+
 		while(it != log.end()){
-			//std::cout << "DELETE : " << it->duration->print() << std::endl;
 			delete it->duration;
 			delete it->timestamp;
 			++it;
@@ -401,27 +433,18 @@ class OBISPowerFailureEventLog : public OBISObject{
 
 class OBISChannel{
 	private:
-
 	std::list<OBISObject*> nList;
 	unsigned int channelNumber;
 
 	public:
-
 	OBISChannel(int channelN){
 		channelNumber = channelN;
 	}
 
 	~OBISChannel(){
-		//std::cout << "OBIS CHANNEL GETTING DELETED" << std::endl;
 		std::list<OBISObject*>::iterator it = nList.begin();
-		
-		// for(it = nList.begin(); it != nList.end(); ++it){
-		// 	//std::cout << "DELETE : " << dynamic_cast<OBISObject*>(*it)->print() << std::endl;
-		// 	ref = it;
-		// 	delete *ref;
-		// }
+
 		while(it != nList.end()){
-			//std::cout << "DELETE : " << dynamic_cast<OBISObject*>(*it)->print() << std::endl;
 			OBISObject * prevP = (*it);
 			it = nList.erase(it);
 			delete prevP;
@@ -444,21 +467,13 @@ class OBISChannel{
 	}
 
 	void addOBISObject(OBISObject * o){
-
-		//OBISObject * toRemove;
-
 		for(const auto &Optr: nList){
-			////std::cout << "COMP: " << o->print();
 			if (*Optr == *o){
-				//std::cout << "OBISObject Collision" << std::endl;
 				nList.remove(Optr);
 				delete Optr;
-				break; //the for loop itterator breaks on deleting Optr, only one unique value should be in nList
-				//Doing a single remove should be enough to remove collision and add the new OBISObject
+				break;
 			}
 		}
-
-		//std::cout << "ADDING OBJECT: " << o->print() << std::endl;
 		nList.push_back(o);
 	}
 };
@@ -472,41 +487,19 @@ class P1Decoder{
 	// P1 --- M-bus0 --- Mbus1 --- Mbus n
 	std::list<OBISChannel*> OBISChannelList;
 	
-	static int decodeP1(const char * msgStart, std::list<OBISChannel*>&channelList, P1Decoder & p1C); //should be null terminated string
+	static int decodeP1(const char * msgStart, P1Decoder & p1C); //should be null terminated string
 
-	std::list<OBISChannel*> getAllOBISChannels(){
-		return OBISChannelList;
-	}
+	std::list<OBISChannel*> getAllOBISChannels();
 
-	OBISChannel * getOBISChannel(unsigned int n){
-		//Add unq channel number
-		for(const auto &Optr: OBISChannelList){
-			if (Optr->getChannelNumber() == n){
-				////std::cout << "OBISChannel Collision, return existing channel" << std::endl;
-				return Optr;
-			}
-		}
+	OBISChannel * getOBISChannel(unsigned int n);
 
-		OBISChannel * Channel = new OBISChannel(n);
-		OBISChannelList.push_back(Channel);
+	void removeOBISChannel(OBISChannel * n);
 
-		return Channel;
-	}
-
-	void removeOBISChannel(OBISChannel * n){
-		for(const auto &Optr: OBISChannelList){
-			if (Optr->getChannelNumber() == n->getChannelNumber()){
-				//std::cout << "OBISObject Collision" << std::endl;
-				OBISChannelList.remove(Optr);
-				delete Optr;
-				break;
-			}
-		}
-	}
+	void clearAllOBISChannel();
 
 	private:
 
-	static int OBIScodeSectionToInt(const char * &startSec);
+	static int OBISCodeSectionToInt(const char * &startSec);
 	static int OBISStringToIntLenght(const char * &startSec, unsigned int n);
 	static int OBISMoveCursorNextLine(const char * &startSec);
 	static int OBISAddObjectToChannel(OBISChannel * oChannel, const char * &startSec, int sec1, int sec2, int sec3);

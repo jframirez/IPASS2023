@@ -43,6 +43,10 @@
 
 #include "P1Decoder.h"
 
+void TC0_Handler(){
+	
+}
+
 int main(void)
 {
     /* Initialize the SAM system */
@@ -75,6 +79,7 @@ int main(void)
 	
 	
 	PMC->PMC_PCER0 |= (	PMC_PCER0_PID8  | //UART
+						PMC_PCER0_PID20 | //USART3
 						PMC_PCER0_PID24 | //SPI0
 						PMC_PCER0_PID25 | //SPI1
 						PMC_PCER0_PID27 | //Timer Counter Channel 0
@@ -148,13 +153,71 @@ int main(void)
 	
 	//wait for UART ready
 	while(!(UART->UART_SR & UART_SR_TXRDY)){}
+		
+	//USART3 -> Test P1 telegram from arduino nano
+	//D.4 = TXD3
+	//D.5 = RXD3
 	
-	Helper::Debug::DebugPrint("TEST PRINT\r\n");
+	PINDriver usart3TX(PIOD, 4);
+	PINDriver usart3RX(PIOD, 5);
 	
+	usart3TX.ControllerPIODisable();
+	usart3RX.ControllerPIODisable();
+	
+	usart3TX.PeripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_B);
+	usart3RX.PeripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_B);
+	
+	USART3->US_BRGR = UART_BRGR_CD(46);
+	USART3->US_CR |= (US_CR_RXEN);
+	USART3->US_MR |= US_MR_USART_MODE_NORMAL | US_MR_CHRL_8_BIT | US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL;
+	USART3->US_RTOR = US_RTOR_TO(40);
+	
+	Helper::Debug::DebugPrintEX("IN RECEIVE LOOP v0.2: ");
+	
+	char cBuffer[4096];
+	int bufCount = 0;
+	int highMark = 0;
+	USART3->US_CR |= US_CR_STTTO;
+	while(1){
+		if((USART3->US_CSR & US_CSR_RXRDY)){
+			USART3->US_CR |= US_CR_RETTO;
+			cBuffer[bufCount] = ((char)(USART3->US_RHR & 0xFF));
+			++bufCount;
+		}
+	
+		if((USART3->US_CSR & US_CSR_TIMEOUT)){
+			//SEND TIMEOUT;
+			USART3->US_CR |= US_CR_STTTO;
+			cBuffer[bufCount] = '\0'; 
+			if(bufCount > highMark){
+				highMark = bufCount;
+			}
+			bufCount = 0;
+			Helper::Debug::DebugPrintEX("\r\nHigh Mark: %i\r\n", highMark);
+			Helper::Debug::DebugPrint(cBuffer);	
+		}
+		//get lower 8 bit, might be implicit in cast to char
+	}
+
+
+//	std::string receiveBuffer;
+// 	USART3->US_CR |= US_CR_STTTO;
+// 	while(1){
+// 		if((USART3->US_CSR & US_CSR_RXRDY)){
+// 			USART3->US_CR |= US_CR_RETTO;
+// 			receiveBuffer += ((char)(USART3->US_RHR & 0xFF));
+// 		}
+// 		
+// 		if(USART3->US_CSR | US_CSR_TIMEOUT){
+// 			//SEND TIMEOUT;
+// 			USART3->US_CR |= US_CR_STTTO;
+// 			Helper::Debug::DebugPrintEXSTRING(receiveBuffer);
+// 			receiveBuffer = std::string();
+// 		}
+// 		 //get lower 8 bit, might be implicit in cast to char
+// 	}
 	
 	//P1Controller::decodeP1(testP1Telegram);
-	
-	Helper::Debug::DebugPrint("TEST PRINT2\r\n");
 
 	//SPI0
 	SPIDriver LCDSpi(SPI0_MISO, SPI0_MOSI, SPI0_SPCK, false, false, SPI0);
@@ -162,30 +225,31 @@ int main(void)
 	//
 	ILI9341Driver LCD(DisplaySS, DisplayDC, DisplayRESET, LCDSpi);
 	
-	//MenuManager p1Screen(LCD);
-	
-	//p1Screen.SetMenu(&menuPageSplash);
-	//p1Screen.WriteTextLabel(0, font_ubuntumono_22, "TEST PRINT");
-	//int iTest = -10;
-	//p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
-	
-	P1Decoder p1msg;
-
-	int P1DecodeValue = P1Decoder::decodeP1(testP1Telegram, p1msg.OBISChannelList, p1msg);
-
-	std::list<OBISChannel*>::iterator it;
-	if(P1DecodeValue == 0){
-		for(auto &ptr: p1msg.OBISChannelList){
-			Helper::Debug::DebugPrintEX("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
-			//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
-			for(auto &Optr: ptr->getOBISObjectList()){
-				Helper::Debug::DebugPrintEXSTRING(Optr->print());
-				Helper::Debug::DebugPrintEX("\r\n");
-			}
-		}	
-	}
+// 	MenuManager p1Screen(LCD);
+// 	
+// 	p1Screen.SetMenu(&menuPageSplash);
+// 	p1Screen.WriteTextLabel(0, font_ubuntumono_22, "TEST PRINT");
+// 	int iTest = -10;
+// 	//p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
+// 	
+// 	P1Decoder p1msg;
+// 
+// 	int P1DecodeValue = P1Decoder::decodeP1(testP1Telegram, p1msg);
+// 
+// 	std::list<OBISChannel*>::iterator it;
+// 	if(P1DecodeValue == 0){
+// 		for(auto &ptr: p1msg.OBISChannelList){
+// 			Helper::Debug::DebugPrintEX("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
+// 			//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
+// 			for(auto &Optr: ptr->getOBISObjectList()){
+// 				Helper::Debug::DebugPrintEXSTRING(Optr->print());
+// 				Helper::Debug::DebugPrintEX("\r\n");
+// 			}
+// 		}	
+// 	}
 
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	
 	
     while (1){
 				
@@ -203,9 +267,21 @@ int main(void)
 			startTime = TC2->TC_CHANNEL[2].TC_CV;
 			
 			//Test uart
-			//Helper::Debug::DebugPrint("TEST PRINT\r\n");
-			//iTest +=1;
-			//p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
+// 			Helper::Debug::DebugPrint("TEST PRINT\r\n");
+// 			iTest +=1;
+// 			
+// 			if(P1DecodeValue == 0){
+// 				for(auto &ptr: p1msg.OBISChannelList){
+// 					Helper::Debug::DebugPrintEX("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
+// 					//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
+// 					for(auto &Optr: ptr->getOBISObjectList()){
+// 						if(Optr->getType() == OBISType::PDelivered){
+// 							p1Screen.WriteTextLabel(1, font_ubuntumono_22, std::string("PDel.(+P):\n" + Optr->printValue()).c_str());	
+// 						}
+// 						
+// 					}
+// 				}
+// 			}
 			
 		}	
 	}

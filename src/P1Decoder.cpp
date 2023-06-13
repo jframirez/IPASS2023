@@ -8,9 +8,9 @@
 
 #include "P1Decoder.h"
 
-//const char * testP1Telegram = "/ISk5\2MT382-1000\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(101209113020W)\r\n0-0:96.1.1(4B384547303034303436333935353037)\r\n1-0:1.8.1(123456.789*kWh)\r\n1-0:1.8.2(123456.789*kWh)\r\n1-0:2.8.1(123456.789*kWh)\r\n1-0:2.8.2(123456.789*kWh)\r\n0-0:96.14.0(0002)\r\n1-0:1.7.0(01.193*kW)\r\n1-0:2.7.0(00.000*kW)\r\n0-0:96.7.21(00004)\r\n0-0:96.7.9(00002)\r\n1-0:99.97.0(2)(0-0:96.7.19)(101208152415W)(0000000240*s)(101208151004W)(0000000301*s)\r\n1-0:32.32.0(00002)\r\n1-0:52.32.0(00001)\r\n1-0:72.32.0(00000)\r\n1-0:32.36.0(00000)\r\n1-0:52.36.0(00003)\r\n1-0:72.36.0(00000)\r\n0-0:96.13.0(303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F)\r\n1-0:32.7.0(220.1*V)\r\n1-0:52.7.0(220.2*V)\r\n1-0:72.7.0(220.3*V)\r\n1-0:31.7.0(001*A)\r\n1-0:51.7.0(002*A)\r\n1-0:71.7.0(003*A)\r\n1-0:21.7.0(01.111*kW)\r\n1-0:41.7.0(02.222*kW)\r\n1-0:61.7.0(03.333*kW)\r\n1-0:22.7.0(04.444*kW)\r\n1-0:42.7.0(05.555*kW)\r\n1-0:62.7.0(06.666*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(3232323241424344313233343536373839)\r\n0-1:24.2.1(101209112500W)(12785.123*m3)\r\n!EF2F";
-
 //String encoded for PC testing purpose
+//testP1Telegram is the example telegram from P1 compendium document,
+//The example is wrong in this document, this is the corrected version.
 const char * testP1Telegram = "/ISk5\\2MT382-1000\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(101209113020W)\r\n0-0:96.1.1(4B384547303034303436333935353037)\r\n1-0:1.8.1(123456.789*kWh)\r\n1-0:1.8.2(123456.789*kWh)\r\n1-0:2.8.1(123456.789*kWh)\r\n1-0:2.8.2(123456.789*kWh)\r\n0-0:96.14.0(0002)\r\n1-0:1.7.0(01.193*kW)\r\n1-0:2.7.0(00.000*kW)\r\n0-0:96.7.21(00004)\r\n0-0:96.7.9(00002)\r\n1-0:99.97.0(2)(0-0:96.7.19)(101208152415W)(0000000240*s)(101208151004W)(0000000301*s)\r\n1-0:32.32.0(00002)\r\n1-0:52.32.0(00001)\r\n1-0:72.32.0(00000)\r\n1-0:32.36.0(00000)\r\n1-0:52.36.0(00003)\r\n1-0:72.36.0(00000)\r\n0-0:96.13.0(303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F)\r\n1-0:32.7.0(220.1*V)\r\n1-0:52.7.0(220.2*V)\r\n1-0:72.7.0(220.3*V)\r\n1-0:31.7.0(001*A)\r\n1-0:51.7.0(002*A)\r\n1-0:71.7.0(003*A)\r\n1-0:21.7.0(01.111*kW)\r\n1-0:41.7.0(02.222*kW)\r\n1-0:61.7.0(03.333*kW)\r\n1-0:22.7.0(04.444*kW)\r\n1-0:42.7.0(05.555*kW)\r\n1-0:62.7.0(06.666*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(3232323241424344313233343536373839)\r\n0-1:24.2.1(101209112500W)(12785.123*m3)\r\n!E47C";
 
 const char * testP1Telegram2 = "/KFM5KAIFA-METER\r\n\r\n1-3:0.2.8(42)\r\n0-0:1.0.0(170124213128W)\r\n0-0:96.1.1(4530303236303030303234343934333135)\r\n1-0:1.8.1(000306.946*kWh)\r\n1-0:1.8.2(000210.088*kWh)\r\n1-0:2.8.1(000000.000*kWh)\r\n1-0:2.8.2(000000.000*kWh)\r\n0-0:96.14.0(0001)\r\n1-0:1.7.0(02.793*kW)\r\n1-0:2.7.0(00.000*kW)\r\n0-0:96.7.21(00001)\r\n0-0:96.7.9(00001)\r\n1-0:99.97.0(1)(0-0:96.7.19)(000101000006W)(2147483647*s)\r\n1-0:32.32.0(00000)\r\n1-0:52.32.0(00000)\r\n1-0:72.32.0(00000)\r\n1-0:32.36.0(00000)\r\n1-0:52.36.0(00000)\r\n1-0:72.36.0(00000)\r\n0-0:96.13.1()\r\n0-0:96.13.0()\r\n1-0:31.7.0(003*A)\r\n1-0:51.7.0(005*A)\r\n1-0:71.7.0(005*A)\r\n1-0:21.7.0(00.503*kW)\r\n1-0:41.7.0(01.100*kW)\r\n1-0:61.7.0(01.190*kW)\r\n1-0:22.7.0(00.000*kW)\r\n1-0:42.7.0(00.000*kW)\r\n1-0:62.7.0(00.000*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303331303033333738373931363136)\r\n0-1:24.2.1(170124210000W)(00671.790*m3)\r\n!29ED";
@@ -20,8 +20,48 @@ P1Decoder::P1Decoder(){
 	
 } //P1Decoder
 
+std::list<OBISChannel*> P1Decoder::getAllOBISChannels(){
+	return OBISChannelList;
+}
 
-int P1Decoder::decodeP1(const char * msgStart, std::list<OBISChannel*>&channelList, P1Decoder & p1C){
+OBISChannel * P1Decoder::getOBISChannel(unsigned int n){
+	//Add unq channel number
+	for(const auto &Optr: OBISChannelList){
+		if (Optr->getChannelNumber() == n){
+			////std::cout << "OBISChannel Collision, return existing channel" << std::endl;
+			return Optr;
+		}
+	}
+
+	OBISChannel * Channel = new OBISChannel(n);
+	OBISChannelList.push_back(Channel);
+
+	return Channel;
+}
+
+void P1Decoder::removeOBISChannel(OBISChannel * n){
+	for(const auto &Optr: OBISChannelList){
+		if (Optr->getChannelNumber() == n->getChannelNumber()){
+			//std::cout << "OBISObject Collision" << std::endl;
+			OBISChannelList.remove(Optr);
+			delete Optr;
+			break;
+		}
+	}
+}
+
+void P1Decoder::clearAllOBISChannel(){
+	std::list<OBISChannel*>::iterator it = OBISChannelList.begin();
+
+	while(it != OBISChannelList.end()){
+		OBISChannel * prevP = (*it);
+		it = OBISChannelList.erase(it);
+		delete prevP;
+	}
+}
+
+
+int P1Decoder::decodeP1(const char * msgStart, P1Decoder & p1C){
 	
 	//Return -1 -> msg is not a P1 Telegram
 	//Return -2 -> CRC error
@@ -38,42 +78,31 @@ int P1Decoder::decodeP1(const char * msgStart, std::list<OBISChannel*>&channelLi
 			if(pCursor[CRCout.crcByteLenght] == '!'){
 				//Make sure 5th next symbol = \r else error
 				if(pCursor[CRCout.crcByteLenght + 5] == '\0'){
-					//std::cout << "CHECKING CRC CODE" << std::endl;
-					//std::cout << "CRC CODE : " << CRCout.crcValue << std::endl;
-					if(std::stoi(pCursor + (CRCout.crcByteLenght + 1), nullptr, 16) == CRCout.crcValue){
-						//CRC ok
-						//std::cout << "CRC ok" << std::endl;
-						}else{
-						//std::cout << "CRC ERROR !" << std::endl;
+					if(std::stoi(pCursor + (CRCout.crcByteLenght + 1), nullptr, 16) != CRCout.crcValue){
 						return -1;
 					}
 					}else{
-					//std::cout << "CRC/MSG ERROR END OF MSG MALFORMED" << std::endl;
 					return -1;
 				}
 			}
 			}else{
-			//std::cout << "CRC/MSG ERROR" << std::endl;
 			return -1;
 		}
 
 		pCursor += 4; // @TODO CRC
-		//std::cout << *pCursor << std::endl;
+
 		if(*pCursor == '5'){
 			//Msg is P1
 			++pCursor; // @TODO CRC
 			}else{
-			//std::cout << "FIRST RETURN ERROR" << std::endl;
 			return -1;
 		}
 		}else{
-		//std::cout << "SECOND RETURN ERROR - NOT A P1 MSG" << std::endl;
 		return -1;
 	}
 	
 	//Ident
 	const char * identStart = pCursor;
-	//std::cout << "P1 Telegram Ident start char : " << *identStart << std::endl;
 	
 	//Ident lenght
 	int identLenght = 0;
@@ -87,41 +116,21 @@ int P1Decoder::decodeP1(const char * msgStart, std::list<OBISChannel*>&channelLi
 	testIdent[identLenght] = '\0';
 
 	//Ident is device name on channel 0
-	
-	//std::cout << "P1 Telegram Ident: " << testIdent << std::endl;
-	//std::cout << "P1 Telegram Ident lenght: " << identLenght << std::endl;
 
-	//std::cout << "pCurser is : " << *pCursor << std::endl;
-	
-	//crlfcrlf
 	pCursor += 4;
 
 	int OBISChannelNumber = 0;
 
 	//parse first exception line
 	if((*pCursor == '1') && (*(pCursor + 1)  == '-') && (*(pCursor + 2)  == '3')){
-		//std::cout << "P1 Special telegram version: " << std::endl;
 		pCursor += 4;
-		//std::cout << "pCursor: " << *pCursor << std::endl;
-		//OBIS parse 255.255.255
-		//int oC = 0;
-		
-		//const char * OBISstart = pCursor;
 
-		int obisCodeSec1 = OBIScodeSectionToInt(pCursor);
-		int obisCodeSec2 = OBIScodeSectionToInt(pCursor);
-		int obisCodeSec3 = OBIScodeSectionToInt(pCursor);
-
-		//uint32_t switchCode = (obisCodeSec1 << 16) | (obisCodeSec2 << 8) | (obisCodeSec3 << 0);
+		int obisCodeSec1 = OBISCodeSectionToInt(pCursor);
+		int obisCodeSec2 = OBISCodeSectionToInt(pCursor);
+		int obisCodeSec3 = OBISCodeSectionToInt(pCursor);
 		
 		//Channel is
 		OBISChannelNumber = 0;
-
-		//std::cout << "OBIS Channel is: " << OBISChannelNumber << std::endl;//For 1-3 hardcoded channel should be 0
-		//Categorie is
-		//channelList.remove(0);
-		//OBISChannel *tester = new OBISChannel(0);
-		//channelList.push_back(tester);
 
 		OBISChannel * tester = p1C.getOBISChannel(OBISChannelNumber);
 
@@ -137,22 +146,13 @@ int P1Decoder::decodeP1(const char * msgStart, std::list<OBISChannel*>&channelLi
 	int countLimit = 0;
 	
 	while(*pCursor !='!' || *pCursor == '\0'){
-		//get channel
 		pCursor += 2;
 
-		// for (int i = 0; i < 20; i++){
-		//     if(*pCursor != '\0'){
-		//         //std::cout << *(pCursor + i) ;
-		//     }
-		// }
-		// //std::cout << std::endl;
+		OBISChannel * channel = p1C.getOBISChannel(OBISCodeSectionToInt(pCursor));
 
-		OBISChannel * channel = p1C.getOBISChannel(OBIScodeSectionToInt(pCursor));
-
-		////std::cout << "Current Channel in use: " << tester->getChannelNumber() << std::endl;
-		int obisCodeSec1 = OBIScodeSectionToInt(pCursor);
-		int obisCodeSec2 = OBIScodeSectionToInt(pCursor);
-		int obisCodeSec3 = OBIScodeSectionToInt(pCursor);
+		int obisCodeSec1 = OBISCodeSectionToInt(pCursor);
+		int obisCodeSec2 = OBISCodeSectionToInt(pCursor);
+		int obisCodeSec3 = OBISCodeSectionToInt(pCursor);
 		
 		OBISAddObjectToChannel(channel, pCursor, obisCodeSec1, obisCodeSec2, obisCodeSec3);
 
@@ -192,7 +192,7 @@ int P1Decoder::OBISMoveCursorNextLine(const char * &startSec){
 	return 0;
 }
 
-int P1Decoder::OBIScodeSectionToInt(const char * &startSec){
+int P1Decoder::OBISCodeSectionToInt(const char * &startSec){
 	//end of obis sector is '.' or '('
 	int val = 0;
 
@@ -322,7 +322,6 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 			
 			if((*pCursor == '\n') && (*pCursor == '\0')){
 				//ERROR STATE IN PARSE
-				//std::cout << "ERROR IN LOG MSG PARSE" << std::endl;
 				break;
 			}
 
@@ -335,7 +334,6 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 			pCursor +=3;
 			OBISObjectFloatingDecimal<double> * objF = new OBISObjectFloatingDecimal<double>(OBISType::GasDelivered, std::stold(pCursor, nullptr), "%0.3f", "m3");
 			static_cast<OBISPowerFailureEventLog*>(obj)->addOBISLog(objT, objF);
-			////std::cout << obj->print() << obj2->print() << std::endl;
 
 			oChannel->addOBISObject(obj);
 
@@ -458,7 +456,6 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 			break;
 		}
 		case OBISBitMask(96,1,1):{
-
 			char hexBuffer[3];
 			char cBuf;
 			std::string convertedBuf;
@@ -506,7 +503,6 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 			
 			obj = new OBISObjectString(OBISType::TextMessage, convertedBuf);
 
-
 			oChannel->addOBISObject(obj);
 			break;
 		}
@@ -536,7 +532,7 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 		case OBISBitMask(99,97,0):{
 			obj = new OBISPowerFailureEventLog(OBISType::PowerFailureEventLog);
 			
-			int nLogCount = OBIScodeSectionToInt(pCursor);
+			int nLogCount = OBISCodeSectionToInt(pCursor);
 			++pCursor;
 
 			for (int i = 0; i < nLogCount; i++){
@@ -552,9 +548,6 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 				
 				pCursor +=2;
 
-				
-				//std::cout << "ADDING NEW LOG ITEM: " << std::endl;
-
 				OBISObjectTST * objT = new OBISObjectTST(OBISType::Timestamp,	OBISStringToIntLenght(pCursor, 2),
 				OBISStringToIntLenght(pCursor, 2),
 				OBISStringToIntLenght(pCursor, 2),
@@ -562,7 +555,7 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 				OBISStringToIntLenght(pCursor, 2),
 				OBISStringToIntLenght(pCursor, 2));
 				pCursor +=3;
-				OBISObjectFloatingDecimal<int> * objF = new OBISObjectFloatingDecimal<int>(OBISType::PowerFailureEventLogTime, OBIScodeSectionToInt(pCursor), "%i", "s");
+				OBISObjectFloatingDecimal<int> * objF = new OBISObjectFloatingDecimal<int>(OBISType::PowerFailureEventLogTime, OBISCodeSectionToInt(pCursor), "%i", "s");
 				static_cast<OBISPowerFailureEventLog*>(obj)->addOBISLog(objT, objF);
 			}
 
@@ -578,7 +571,6 @@ int P1Decoder::OBISAddObjectToChannel(OBISChannel * oChannel, const char * &pCur
 
 // default destructor
 P1Decoder::~P1Decoder(){
-
 	if(!OBISChannelList.empty()){
 		std::list<OBISChannel*>::iterator it;
 		for(it = OBISChannelList.begin(); it != OBISChannelList.end(); ++it){
