@@ -34,9 +34,10 @@ class MenuManager{
 public:
 	MenuManager(ILI9341Driver & LCD);
 	
-	int SetMenu(const menu * name);
+	int SetMenu(const menu * name, ILI_COLORS backfill);
 
 	void WriteTextLabel(uint n, font curFont, const char * pString, ... );
+	void WriteTextLabel(uint n, font curFont, std::string sBuf);
 	
 	~MenuManager();
 protected:

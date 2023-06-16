@@ -12,5 +12,6 @@
 #include "menuPage.h"
 
 extern const struct menu menuPageSplash;
+extern const struct menu menuPageMain;
 
 #endif /* MENUPAGESPLASH_H_ */

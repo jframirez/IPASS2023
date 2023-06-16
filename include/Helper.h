@@ -33,9 +33,9 @@ namespace Helper{
 	}
 	
 	namespace Debug{
-		void DebugPrint(const char * pString, ... );
-		void DebugPrintEX(const char * pString, ... );
-		void DebugPrintEXSTRING(std::string const & x);
+		void DebugPrint(const char * pString);
+		void DebugPrintVA(const char * pString, ... );
+		void DebugPrint(const std::string & x);
 		void DebugPrint(char pString);
 	}
 }

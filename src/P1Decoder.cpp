@@ -15,6 +15,13 @@ const char * testP1Telegram = "/ISk5\\2MT382-1000\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.
 
 const char * testP1Telegram2 = "/KFM5KAIFA-METER\r\n\r\n1-3:0.2.8(42)\r\n0-0:1.0.0(170124213128W)\r\n0-0:96.1.1(4530303236303030303234343934333135)\r\n1-0:1.8.1(000306.946*kWh)\r\n1-0:1.8.2(000210.088*kWh)\r\n1-0:2.8.1(000000.000*kWh)\r\n1-0:2.8.2(000000.000*kWh)\r\n0-0:96.14.0(0001)\r\n1-0:1.7.0(02.793*kW)\r\n1-0:2.7.0(00.000*kW)\r\n0-0:96.7.21(00001)\r\n0-0:96.7.9(00001)\r\n1-0:99.97.0(1)(0-0:96.7.19)(000101000006W)(2147483647*s)\r\n1-0:32.32.0(00000)\r\n1-0:52.32.0(00000)\r\n1-0:72.32.0(00000)\r\n1-0:32.36.0(00000)\r\n1-0:52.36.0(00000)\r\n1-0:72.36.0(00000)\r\n0-0:96.13.1()\r\n0-0:96.13.0()\r\n1-0:31.7.0(003*A)\r\n1-0:51.7.0(005*A)\r\n1-0:71.7.0(005*A)\r\n1-0:21.7.0(00.503*kW)\r\n1-0:41.7.0(01.100*kW)\r\n1-0:61.7.0(01.190*kW)\r\n1-0:22.7.0(00.000*kW)\r\n1-0:42.7.0(00.000*kW)\r\n1-0:62.7.0(00.000*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303331303033333738373931363136)\r\n0-1:24.2.1(170124210000W)(00671.790*m3)\r\n!29ED";
 
+const char * testP1Telegram3 = "/JFR5SIM-P1-METER\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(170124213128W)\r\n0-0:96.1.1(4530303236303030303234343934333135)\r\n1-0:1.8.1(000411.141*kWh)\r\n!0431";
+
+const char * testP1Telegram4 = "/JFR5SIM-P1-METER\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(170124213128W)\r\n0-0:96.1.1(4530303236303030303234343934333135)\r\n1-0:1.7.0(000482.745*kWh)\r\n!1793";
+
+const char * testP1TelegramCapture = "/ISK5\\2M550E-1012\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(230615210817S)\r\n0-0:96.1.1(4530303433303037343231343730323139)\r\n1-0:1.8.1(008378.196*kWh)\r\n1-0:1.8.2(004019.445*kWh)\r\n1-0:2.8.1(000499.523*kWh)\r\n1-0:2.8.2(001403.870*kWh)\r\n0-0:96.14.0(0001)\r\n1-0:1.7.0(00.368*kW)\r\n1-0:2.7.0(00.000*kW)\r\n0-0:96.7.21(00008)\r\n0-0:96.7.9(00005)\r\n1-0:99.97.0(3)(0-0:96.7.19)(190514051940S)(0000000554*s)(200924114954S)(0000008885*s)(211208115451W)(0000011472*s)\r\n1-0:32.32.0(00007)\r\n1-0:32.36.0(00001)\r\n0-0:96.13.0()\r\n1-0:32.7.0(238.2*V)\r\n1-0:31.7.0(002*A)\r\n1-0:21.7.0(00.368*kW)\r\n1-0:22.7.0(00.000*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303339303031393335343838303139)\r\n0-1:24.2.1(230615210459S)(04490.555*m3)\r\n!9802";
+
+const char * testP1TelegramCaptureError = "/ISK5\\2M550E-1012\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(230616144327S)\r\n0-0:96.1.1(4530303433303037343231343730323139)\r\n1-0:1.8.1(008382.642*kWh)\r\n1-0:1.8.2(004019.737*kWh)\r\n1-0:2.8.1(000499.523*kWh)\r\n1-0:2.8.2(001406.900*kWh)\r\n0-0:96.14.0(0002)\r\n1-0:1.7.0(00.000*kW)\r\n1-0:2.7.0(00.499*kW)\r\n0-0:96.7.21(00008)\r\n0-0:96.7.9(00005)\r\n1-0:99.97.0(3)(0-0:96.7.19)(190514051940S)(0000000554*s)(200924114954S)(0000008885*s)(211208115451W)(0000011472*s)\r\n1-0:32.32.0(00007)\r\n1-0:32.36.0(00001)\r\n0-0:96.13.0()\r\n1-0:32.7.0(238.6*V)\r\n1-0:31.7.0(002*A)\r\n1-0:21.7.0(00.000*kW)\r\n1-0:22.7.0(00.493*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303339303031393335343838303139)\r\n0-1:24.2.1(230616144002S)(04490.851*m3)\r\n!B1F2\r\n";
 // default constructor
 P1Decoder::P1Decoder(){
 	
@@ -77,16 +84,16 @@ int P1Decoder::decodeP1(const char * msgStart, P1Decoder & p1C){
 		if(CRCout.crcErrorCode == 0){
 			if(pCursor[CRCout.crcByteLenght] == '!'){
 				//Make sure 5th next symbol = \r else error
-				if(pCursor[CRCout.crcByteLenght + 5] == '\0'){
+				if((pCursor[CRCout.crcByteLenght + 5] == '\0') | (pCursor[CRCout.crcByteLenght + 5] == '\r') | (pCursor[CRCout.crcByteLenght + 5] == '\n')){
 					if(std::stoi(pCursor + (CRCout.crcByteLenght + 1), nullptr, 16) != CRCout.crcValue){
 						return -1;
 					}
 					}else{
-					return -1;
+					return -2;
 				}
 			}
 			}else{
-			return -1;
+			return -3;
 		}
 
 		pCursor += 4; // @TODO CRC
@@ -95,27 +102,20 @@ int P1Decoder::decodeP1(const char * msgStart, P1Decoder & p1C){
 			//Msg is P1
 			++pCursor; // @TODO CRC
 			}else{
-			return -1;
+			return -4;
 		}
 		}else{
-		return -1;
+		return -5;
 	}
 	
-	//Ident
-	const char * identStart = pCursor;
-	
-	//Ident lenght
-	int identLenght = 0;
-	while(*pCursor != '\r'){
-		++identLenght;
-		++pCursor; // @TODO CRC
-	}
-	char * testIdent = new char[identLenght];
-	
-	strncpy(testIdent, identStart, identLenght);
-	testIdent[identLenght] = '\0';
+	p1C.deviceIdentifier = "";
 
-	//Ident is device name on channel 0
+	while(*pCursor != '\r'){
+		p1C.deviceIdentifier += *pCursor;
+		++pCursor;
+	}
+
+	//Ident is device name for P1 device
 
 	pCursor += 4;
 
@@ -137,7 +137,7 @@ int P1Decoder::decodeP1(const char * msgStart, P1Decoder & p1C){
 		OBISAddObjectToChannel(tester, pCursor, obisCodeSec1, obisCodeSec2, obisCodeSec3);
 
 		}else{
-		return -1;
+		return -6;
 	}
 
 	//at this point regular OBIS object can be added

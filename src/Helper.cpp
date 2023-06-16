@@ -47,39 +47,24 @@ namespace Helper{
 		}
 		
 		
-		void DebugPrint(const char * pString, ... ){
+		void DebugPrint(const char * pString){
 			while(*pString != '\0'){
 				UART->UART_THR = *pString;
 				while(!(UART->UART_SR & UART_SR_TXEMPTY)){}
 				++pString;
 			}
-			
-			/*
-			
-			char buffer[1024];
-			va_list args;
-			va_start(args, pString);
-			vsnprintf(buffer, 1024, pString, args);
-			va_end(args);
-			
-			int counter = 0;
-			
-			while((buffer[counter] != '\0') | (counter < 1024)){
-				UART->UART_THR = buffer[counter];	
-				while(!(UART->UART_SR & UART_SR_TXEMPTY)){}		
-				++counter;
-			}
-			
-			*/
 		}
 		
-		void DebugPrintEX(const char * pString, ... ){
-			char buffer[200]; //make sure to not make this go beyond heap size
+		void DebugPrintVA(const char * pString, ... ){
+			char buffer[1024]; //make sure to not make this go beyond heap size
 			char * bufferP = buffer;
 			va_list args;
 			va_start(args, pString);
 			vsnprintf(buffer, 200, pString, args);
 			va_end(args);
+
+			//Hard set end of buffer with \0 to always end print line;
+			buffer[199] = '\0';
 
 			while( *bufferP != '\0'){
 				UART->UART_THR = *bufferP;
@@ -88,7 +73,7 @@ namespace Helper{
 			}
 		}
 		
-		void DebugPrintEXSTRING(std::string const &x){
+		void DebugPrint(const std::string & x){
 			const char * bufferP = x.c_str();
 
 			while( *bufferP != '\0'){

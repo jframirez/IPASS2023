@@ -19,8 +19,14 @@
 
 #include <ctime>
 
+#include <typeinfo>
+
 extern const char * testP1Telegram;
 extern const char * testP1Telegram2;
+extern const char * testP1Telegram3;
+extern const char * testP1Telegram4;
+extern const char * testP1TelegramCapture;
+extern const char * testP1TelegramCaptureError;
 
 enum class OBISType{
 	Version,
@@ -153,52 +159,10 @@ class OBISObject{ //pure virtual class
 	virtual OBISType getType() const= 0;
 	virtual ~OBISObject() = default;
 	virtual bool operator== (const OBISObject &o) = 0;
+	virtual std::string getMagicDelta(OBISObject * x) = 0;
 	virtual std::string print() = 0;
 	virtual std::string printValue() = 0;
 };
-
-
-
-class OBISObjectVersion : public OBISObject{
-	private:
-	int versionMain = 0;
-	int versionDecimal = 0;
-
-	public:
-	OBISType getType() const{
-		return OBISType::Version;
-	}
-
-	bool operator==(const OBISObject &o){
-		////std::cout << "COMPARING OBISObject" << std::endl;
-		if(o.getType() == this->getType()){
-			return true;
-		}
-		return false;
-	}
-
-	std::string print(){
-		return std::string(	"DSMR Version: "
-		+ std::to_string(versionMain)
-		+ "."
-		+ std::to_string(versionDecimal));
-	}
-
-	std::string printValue(){
-		return std::string(	std::to_string(versionMain)
-		+ "."
-		+ std::to_string(versionDecimal));
-	}
-
-	OBISObjectVersion(int m, int d){
-		versionMain = m;
-		versionDecimal = d;
-	}
-
-	~OBISObjectVersion(){
-	}
-};
-
 
 template <typename T>
 class OBISObjectFloatingDecimal : public OBISObject{
@@ -215,6 +179,32 @@ class OBISObjectFloatingDecimal : public OBISObject{
 
 	T getValue(){
 		return value;
+	}
+
+	T getDelta(OBISObject * &o){
+		auto x = dynamic_cast<OBISObjectFloatingDecimal<T>*>(o);
+		if(x){
+			return value - x->getValue();
+		}
+		return 0;
+	}
+
+	T getDelta2(OBISObjectFloatingDecimal<T> * &o){
+		auto x = o;
+		if(x){
+			return value - x->getValue();
+		}
+		return 0;
+	}
+
+	std::string getMagicDelta(OBISObject * o){
+		auto x = dynamic_cast<OBISObjectFloatingDecimal<T>*>(o);
+		if(x){
+			char buf[20];
+			sprintf(buf, formatP, (value - x->getValue()));
+			return std::string(buf + std::string(unitText));
+		}
+		return std::string("NaN");
 	}
 
 	std::string getValueString(){
@@ -281,6 +271,10 @@ class OBISObjectString : public OBISObject{
 		return false;
 	}
 
+	std::string getMagicDelta(OBISObject * o){
+		return std::string("NaN");
+	}
+
 	std::string print(){
 		return std::string(	getOBISTypeString(getType())
 		+ std::string(": ")
@@ -324,6 +318,10 @@ class OBISObjectTST : public OBISObject{
 			return true;
 		}
 		return false;
+	}
+
+	std::string getMagicDelta(OBISObject * o){
+		return std::string("NaN");
 	}
 
 	std::string print(){
@@ -373,6 +371,10 @@ class OBISPowerFailureEventLog : public OBISObject{
 
 	OBISType getType() const{
 		return thisType;
+	}
+
+	std::string getMagicDelta(OBISObject * o){
+		return std::string("NaN");
 	}
 
 	bool operator==(const OBISObject &o){
@@ -483,6 +485,7 @@ class P1Decoder{
 	P1Decoder();
 	~P1Decoder();
 
+	std::string deviceIdentifier = "";
 	// [0] --- [1] --- [2] --- [n]
 	// P1 --- M-bus0 --- Mbus1 --- Mbus n
 	std::list<OBISChannel*> OBISChannelList;
