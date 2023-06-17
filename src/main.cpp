@@ -34,8 +34,6 @@
 #include "../Font/include/font-ubuntumono-34.h"
 #include "../Font/include/font-ubuntumono-40.h"
 
-#include "../Img/include/TestJPG.h"
-
 #include "MenuManager.h"
 #include "menuPageSplash.h"
 
@@ -171,73 +169,41 @@ int main(void)
 	USART3->US_CR |= (US_CR_RXEN);
 	USART3->US_MR |= US_MR_USART_MODE_NORMAL | US_MR_CHRL_8_BIT | US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL;
 	USART3->US_RTOR = US_RTOR_TO(500);
-	
-	Helper::Debug::DebugPrint("IN RECEIVE LOOP v0.2: ");
-	
-// 	char cBuffer[4096];
-// 	int bufCount = 0;
-// 	int highMark = 0;
-// 	USART3->US_CR |= US_CR_STTTO;
-// 	while(1){
-// 		if((USART3->US_CSR & US_CSR_RXRDY)){
-// 			USART3->US_CR |= US_CR_RETTO;
-// 			cBuffer[bufCount] = ((char)(USART3->US_RHR & 0xFF));
-// 			++bufCount;
-// 		}
-// 	
-// 		if((USART3->US_CSR & US_CSR_TIMEOUT)){
-// 			//SEND TIMEOUT;
-// 			USART3->US_CR |= US_CR_STTTO;
-// 			cBuffer[bufCount] = '\0'; 
-// 			if(bufCount > highMark){
-// 				highMark = bufCount;
-// 			}
-// 			bufCount = 0;
-// 			Helper::Debug::DebugPrintEX("\r\nHigh Mark: %i\r\n", highMark);
-// 			Helper::Debug::DebugPrint(cBuffer);	
-// 		}
-// 		//get lower 8 bit, might be implicit in cast to char
-// 	}
-
-
-	
-	//while(1){
-		
-		 
-	//}
-	
-	//P1Controller::decodeP1(testP1Telegram);
 
 	//SPI0
 	SPIDriver LCDSpi(SPI0_MISO, SPI0_MOSI, SPI0_SPCK, false, false, SPI0);
 	
-	//
+	//LCD
 	ILI9341Driver LCD(DisplaySS, DisplayDC, DisplayRESET, LCDSpi);
 	
+	//Menu
  	MenuManager p1Screen(LCD);
  	
  	p1Screen.SetMenu(&menuPageSplash, ILI_COLORS::BLACK);
- 	p1Screen.WriteTextLabel(0, font_ubuntumono_22, "TEST PRINT");
-// 	int iTest = -10;
-// 	//p1Screen.WriteTextLabel(1, font_ubuntumono_22, "VAL: %i", iTest);
-// 	
- 	
-// 
-// 	int P1DecodeValue = P1Decoder::decodeP1(testP1Telegram, p1msg);
-// 
-// 	std::list<OBISChannel*>::iterator it;
-// 	if(P1DecodeValue == 0){
-// 		for(auto &ptr: p1msg.OBISChannelList){
-// 			Helper::Debug::DebugPrintEX("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
-// 			//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
-// 			for(auto &Optr: ptr->getOBISObjectList()){
-// 				Helper::Debug::DebugPrintEXSTRING(Optr->print());
-// 				Helper::Debug::DebugPrintEX("\r\n");
-// 			}
-// 		}	
-// 	}
-
+ 	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "TEST PRINT");
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	p1Screen.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
+	
+	
 	
 	p1Screen.SetMenu(&menuPageMain, ILI_COLORS::BLACK);
 	
@@ -258,25 +224,7 @@ int main(void)
 				
 			}
 			debugLED2.ON();
-			startTime = TC2->TC_CHANNEL[2].TC_CV;
-			
-			//Test uart
-// 			Helper::Debug::DebugPrint("TEST PRINT\r\n");
-// 			iTest +=1;
-// 			
-// 			if(P1DecodeValue == 0){
-// 				for(auto &ptr: p1msg.OBISChannelList){
-// 					Helper::Debug::DebugPrintEX("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
-// 					//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
-// 					for(auto &Optr: ptr->getOBISObjectList()){
-// 						if(Optr->getType() == OBISType::PDelivered){
-// 							p1Screen.WriteTextLabel(1, font_ubuntumono_22, std::string("PDel.(+P):\n" + Optr->printValue()).c_str());	
-// 						}
-// 						
-// 					}
-// 				}
-// 			}
-			
+			startTime = TC2->TC_CHANNEL[2].TC_CV;			
 		}
 		
 		if((USART3->US_CSR & US_CSR_RXRDY)){
@@ -321,11 +269,12 @@ int main(void)
 			 		}	 
 			 	}
 				if((deltaP1 != nullptr) && (deltaP2 != nullptr)){
-					p1Screen.WriteTextLabel(0, font_ubuntumono_22, std::string("PDel.(DP):\n" + deltaP1->getMagicDelta(deltaP2)));
-
+					p1Screen.WriteTextLabel(0, font_ubuntumono_22, std::string("PDel.(DP): " + deltaP1->getMagicDelta(deltaP2)));
+					p1Screen.WriteTextLabel(0, font_ubuntumono_22, std::string("PDel.(DP): NaN"));
 				}
 			}else{
 				Helper::Debug::DebugPrint("ERROR PARSING P1\r\n");
+				p1Screen.WriteTextLabel(0, font_ubuntumono_22, std::string("PDel.(DP):\nNaN"));
 				p1Screen.WriteTextLabel(0, font_ubuntumono_22, std::string("PDel.(DP):\nNaN"));
 			}
 			

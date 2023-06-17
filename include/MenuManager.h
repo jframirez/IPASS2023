@@ -36,8 +36,7 @@ public:
 	
 	int SetMenu(const menu * name, ILI_COLORS backfill);
 
-	void WriteTextLabel(uint n, font curFont, const char * pString, ... );
-	void WriteTextLabel(uint n, font curFont, std::string sBuf);
+	void WriteTextLabel(uint n, font curFont, std::string sBuf, bool contWrite = true);
 	
 	~MenuManager();
 protected:
@@ -45,6 +44,10 @@ private:
 
 	ILI9341Driver & myLCD;
 	const menu * currentMenu;
+	
+	bool usedOnce = true;
+	uint _cur_WriteTextLabel_fullHeightOffset = 0;
+
 	
 
 	MenuManager( const MenuManager &c );
