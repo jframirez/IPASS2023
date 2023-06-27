@@ -18,22 +18,22 @@ uint16_t operator&(ILI_COLORS lhs, uint rhs){
 
 
 // default constructor
-ILI9341Driver::ILI9341Driver(	PINDriver & chipselect,
+ILI9341Driver::ILI9341Driver(	uint width,
+				uint height,
+				PINDriver & chipselect,
 				PINDriver & dc,
 				PINDriver & reset,
 				SPIDriver & spi):
 				displaySS(chipselect),
 				displayDC(dc),
 				displayRESET(reset),
-				mySPI(spi){		
-					char buffer[256];
-					Helper::Debug::DebugPrint("ILI9341 using Font: \r\nFONT NAME: ");
-					Helper::Debug::DebugPrint(font_ubuntumono_10.name);
-					Helper::Debug::DebugPrint("\r\nFONT SIZE: ");
-					Helper::Debug::DebugPrint(itoa(font_ubuntumono_10.size, buffer, 10));
-					Helper::Debug::DebugPrint("\r\n");
+				mySPI(spi)
+				{		
 					
-					
+					SetWidth(width);
+					SetHeight(height);
+							
+					Helper::Debug::DebugPrint("ILI DRIVER INIT: \r\n");
 					Helper::Debug::DebugPrint("ILI DRIVER: Hardware reset\r\n");
 					HardwareReset();
 					
@@ -42,26 +42,22 @@ ILI9341Driver::ILI9341Driver(	PINDriver & chipselect,
 					SoftwareReset();
 					
 					CS_Disable();
-					Helper::Debug::DebugPrint("ILI DRIVER: STATUS END\r\n");
 
 					Helper::Debug::DebugPrint("ILI DRIVER: CMD INIT\r\n");
 					
-					//Magic?
+					//Magic?, this command is necessary but is undocumented, but exist in all existing library's 
 					SendCommandWithParamter(0xEF, 3, 0x03, 0x80, 0x02);
 					
-					SendCommandWithParamter(0xCF, 3, 0x00, 0xC1, 0x30);
+					SendCommandWithParamter(ILI9341CMD_Power_on_sequence_control, 4, 0x64, 0x03, 0x12, 0x81);
 					
-					SendCommandWithParamter(0xED, 4, 0x64, 0x03, 0x12, 0x81);
+					SendCommandWithParamter(ILI9341CMD_Pump_ratio_control, 1, 0x20);
 					
-					SendCommandWithParamter(0xE8, 3, 0x85, 0x00, 0x78);
+					SendCommandWithParamter(ILI9341CMD_Driver_timing_control_A, 3, 0x85, 0x00, 0x78);
+					SendCommandWithParamter(ILI9341CMD_Power_control_A, 5, 0x39, 0x2C, 0x00, 0x34, 0x02);
 					
 					
-					
-					SendCommandWithParamter(0xCB, 5, 0x39, 0x2C, 0x00, 0x34, 0x02);
-					
-					SendCommandWithParamter(0xF7, 1, 0x20);
-					
-					SendCommandWithParamter(0xEA, 2, 0x00, 0x00);
+					SendCommandWithParamter(ILI9341CMD_Driver_timing_control_B, 2, 0x00, 0x00);
+					SendCommandWithParamter(ILI9341CMD_Power_control_B, 3, 0x00, 0xC1, 0x30);
 
 					SendCommandWithParamter(ILI9341CMD_Power_Control_1, 1, 0x23);
 					SendCommandWithParamter(ILI9341CMD_Power_Control_2, 1, 0x10);
@@ -69,13 +65,7 @@ ILI9341Driver::ILI9341Driver(	PINDriver & chipselect,
 					SendCommandWithParamter(ILI9341CMD_VCOM_Control_1, 2, 0x3e, 0x28);
 					SendCommandWithParamter(ILI9341CMD_VCOM_Control_2, 1, 0x86);
 					
-					//Default = ILI9341_MADCTL_MX | ILI9341_MADCTL_ML PORTRAIT
-					//ILI_SendCommandWithParamter(ILI9341CMD_Memory_Access_Control, 1, (ILI9341_MADCTL_MV | ILI9341_MADCTL_ML | ILI9341_MADCTL_BGR));
-
 					SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);
-					
-					//SoftwareReset(); // Software reset after SetRotation sets CASET & PASET to correct values
-					//Can also be set manualy.
 					
 					SendCommandWithParamter(ILI9341CMD_Vertical_Scrolling_Start_Address, 1, 0x00);
 					
@@ -95,78 +85,25 @@ ILI9341Driver::ILI9341Driver(	PINDriver & chipselect,
 
 					SendCommand(ILI9341CMD_Display_ON);
 					
-					Helper::Debug::DebugPrint("ILI DRIVER: Display on\r\n");
-					
-					/*
-					SendStartCont();
-					SendCommandCont(ILI9341CMD_Memory_Write);
-					for (uint i = 0; i < max_pixel_count; ++i){
-						SendDataCont16_t(ILI_COLORS::RED);
-					}
-					SendEndCont();
-					
-					Helper::Time::delay1_5us(4 * Helper::Time::TIME_UNIT_1_5US::SECOND);
-					SetRotation(ILI_ROTATION_MODE::PORTRAIT, false, true);
-					
-					SendStartCont();
-					SendCommandCont(ILI9341CMD_Memory_Write);
-					for (uint i = 0; i < max_pixel_count; ++i){
-						SendDataCont16_t(ILI_COLORS::BLUE);
-					}
-					SendEndCont();
-					*/
-					
-					/*
-					//Prost read display status
-					Helper::Debug::DebugPrint("ILI DRIVER Post: STATUS\r\n");
-					ILI_CS_Enable();
-										
-					ILI_DC_SetCommand();
-					mySPI.SPISend(ILI9341CMD_Read_Display_Status);
-					ILI_DC_SetData();
-					mySPI.SPISend(0x00); //DUMMY & empty
-					while(!(SPI0->SPI_SR & SPI_SR_RDRF)){};
-					Helper::Debug::DebugPrint((uint8_t)(SPI0->SPI_RDR & 0xFF)); //LLB
-					mySPI.SPISend(0x00); //DUMMY & first
-					while(!(SPI0->SPI_SR & SPI_SR_RDRF)){};
-					Helper::Debug::DebugPrint((uint8_t)(SPI0->SPI_RDR & 0xFF)); //LLB
-					mySPI.SPISend(0x00); //DUMMY & first
-					while(!(SPI0->SPI_SR & SPI_SR_RDRF)){};
-					Helper::Debug::DebugPrint((uint8_t)(SPI0->SPI_RDR & 0xFF)); //LLB
-					mySPI.SPISend(0x00); //DUMMY & first
-					while(!(SPI0->SPI_SR & SPI_SR_RDRF)){};
-					Helper::Debug::DebugPrint((uint8_t)(SPI0->SPI_RDR & 0xFF)); //LLB
-					mySPI.SPISend(0x00); //DUMMY & first
-					while(!(SPI0->SPI_SR & SPI_SR_RDRF)){};
-					Helper::Debug::DebugPrint((uint8_t)(SPI0->SPI_RDR & 0xFF)); //LLB
-										
-					ILI_CS_Disable();
-					Helper::Debug::DebugPrint("ILI DRIVER Post: STATUS END\r\n");
-					*/							
+					Helper::Debug::DebugPrint("ILI DRIVER: Display on\r\n");					
 }
 
 void ILI9341Driver::SendCommandWithParamter(uint8_t command, int parameterN, ...){
-	//Helper::Debug::DebugPrint("Debug per line\r\n");
 	CS_Enable();
 	DC_SetCommand();
 	mySPI.SPISend(command);
 	DC_SetData();
-	//Helper::Debug::DebugPrint((uint8_t)(SPI0->SPI_RDR & 0xFF)); //LLB
-	
-	//Helper::Debug::DebugPrint(command);
+
 	va_list args;
 	va_start(args, parameterN);
-	//Helper::Debug::DebugPrint("ILI DRIVER TEST\r\n");
+
 	for(int i = 0; i < parameterN; ++i){
 		uint8_t byte = (uint8_t)va_arg(args, int);
-		//Helper::Debug::DebugPrint(byte);
-		//Helper::Debug::DebugPrint("\r\n");
 		mySPI.SPISend(byte);
-		//Helper::Debug::DebugPrint((uint8_t)(SPI0->SPI_RDR & 0xFF)); //LLB
 	}
+	
 	va_end(args);
 	
-	//Helper::Debug::DebugPrint("\r\n");
 	CS_Disable();
 }
 
@@ -174,9 +111,9 @@ void ILI9341Driver::HardwareReset(){
 	CS_Disable();
 	DC_SetCommand();
 	//RESET Display
-	displayRESET.SetOutput(PIO_OUTPUT::LOW);
+	displayRESET.SetOutput(PIO_PIN_STATE::LOW);
 	Helper::Time::delay1_5us(200 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	displayRESET.SetOutput(PIO_OUTPUT::HIGH);
+	displayRESET.SetOutput(PIO_PIN_STATE::HIGH);
 	Helper::Time::delay1_5us(200 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 }
 
@@ -210,48 +147,68 @@ void ILI9341Driver::SendCommand(uint8_t byte){
 	CS_Disable();	
 }
 
-void ILI9341Driver::SetRotation(ILI_ROTATION_MODE mode, bool Cont, bool SetCASETPASET){
+void ILI9341Driver::SetWidth(uint w){
+	//Max is ILI9341_WIDTH_X
+	if(w > ILI9341_WIDTH_X){
+		w = ILI9341_WIDTH_X;
+	}
+	
+	width = w;
+	
+	colStart = 0;
+	colEnd = width - 1;
+	colLenght = colEnd - colStart;
+}
+
+void ILI9341Driver::SetHeight(uint h){
+	//Max is ILI9341_WIDTH_X
+	if(h > ILI9341_WIDTH_X){
+		h = ILI9341_WIDTH_X;
+	}
+	
+	height = h;
+	
+	rowStart = 0;
+	rowEnd = height - 1;
+	rowLenght = rowEnd - rowStart;
+}
+
+void ILI9341Driver::SetRotation(ILI_ROTATION_MODE mode, bool cont, bool setCASETPASET){
 	uint8_t MADCTL = 0;
+		
 	switch (mode){
-		case ILI_ROTATION_MODE::LANDSCAPE:
-			//LANDSCAPE
-			width = ILI9341_WIDTH_X;
-			height = ILI9341_HEIGHT_Y;
-			
-			colStart = 0;
-			colEnd = width - 1;
-			colLenght = colEnd - colStart;
-			
-			rowStart = 0;
-			rowEnd = height - 1;
-			rowLenght = rowEnd - rowStart;
+		case ILI_ROTATION_MODE::LANDSCAPE_INVERTED:
+			SetWidth(ILI9341_WIDTH_X);
+			SetHeight(ILI9341_HEIGHT_Y);
 			
 			MADCTL = (ILI9341_MADCTL_MV | ILI9341_MADCTL_ML | ILI9341_MADCTL_BGR);
 			break;
+		case ILI_ROTATION_MODE::LANDSCAPE:
+			SetWidth(ILI9341_WIDTH_X);
+			SetHeight(ILI9341_HEIGHT_Y);
+		
+			MADCTL = (ILI9341_MADCTL_MV | ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR);
+			break;	
 		case ILI_ROTATION_MODE::PORTRAIT:
-			//PORTRAIT
-			width = ILI9341_HEIGHT_Y;
-			height = ILI9341_WIDTH_X;
-			
-			colStart = 0;
-			colEnd = width - 1;
-			colLenght = colEnd - colStart;
-			
-			rowStart = 0;
-			rowEnd = height - 1;
-			rowLenght = rowEnd - rowStart;
+			SetWidth(ILI9341_HEIGHT_Y);
+			SetHeight(ILI9341_WIDTH_X);
 			
 			MADCTL = (ILI9341_MADCTL_MX | ILI9341_MADCTL_ML | ILI9341_MADCTL_BGR);
 			break;
-		default:
+		case ILI_ROTATION_MODE::PORTRAIT_INVERTED:
+			SetWidth(ILI9341_HEIGHT_Y);
+			SetHeight(ILI9341_WIDTH_X);
+			
+			MADCTL = (ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR);
+			break;			
+		default: //Default is landscape
 			MADCTL = (ILI9341_MADCTL_MX | ILI9341_MADCTL_ML | ILI9341_MADCTL_BGR);
 	}
 	
-	//Default = ILI9341_MADCTL_MX | ILI9341_MADCTL_ML PORTRAIT
-	if(Cont){
+	if(cont){
 		SendCommand(ILI9341CMD_Memory_Access_Control);
 		SendDataCont(MADCTL);
-		if(SetCASETPASET){
+		if(setCASETPASET){
 			SendCommandCont(ILI9341CMD_Column_Address_Set);
 			SendDataCont(0x00);
 			SendDataCont(0x00);
@@ -265,7 +222,7 @@ void ILI9341Driver::SetRotation(ILI_ROTATION_MODE mode, bool Cont, bool SetCASET
 		}
 	}else{
 		SendCommandWithParamter(ILI9341CMD_Memory_Access_Control, 1, MADCTL);
-		if(SetCASETPASET){
+		if(setCASETPASET){
 			SendCommandWithParamter(ILI9341CMD_Column_Address_Set, 4, 0x00, 0x00, width >> 8, width & 0xFF);
 			SendCommandWithParamter(ILI9341CMD_Page_Address_Set, 4, 0x00, 0x00, height >> 8, height & 0xFF);
 		}
@@ -288,7 +245,105 @@ void ILI9341Driver::SendDataCont(uint8_t byte){
 	mySPI.SPISend(byte);
 }
 
+void ILI9341Driver::SendTestPatternColorBlocks(){
+	
+	//ILI_COLORS currentColor = ILI_COLORS::GREEN;
+	std::vector<ILI_COLORS> colorList = {	ILI_COLORS::GREEN,
+											ILI_COLORS::RED,
+											ILI_COLORS::BLACK,
+											ILI_COLORS::WHITE,
+											ILI_COLORS::BLUE,
+											ILI_COLORS::ORANGE,
+											ILI_COLORS::PURPLE,
+											ILI_COLORS::YELLOW};
+											
+	auto getVal = [&](int n)	{
+		return colorList[n%colorList.size()];
+	};
+	
+	SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);
+	
+	SendStartCont();
+	SendCommandCont(ILI9341CMD_Memory_Write);
+	
+	int blocksize = 20;
+	
+	//I,J offset -1;
+	for (int i = 1; i <= 240/blocksize; ++i){
+		for (int z = 1; z <= blocksize; ++z){
+			for (int j = 1; j <= 320; j+=blocksize){
+				for (int k = 0; k < blocksize; ++k){
+					SendDataCont16_t(getVal((j) + (i)));
+				}
+			}
+		}	
+	}
+	
+	SendEndCont();
+	
+	Helper::Time::delay1_5us(2000 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
+	
+	SetRotation(ILI_ROTATION_MODE::LANDSCAPE_INVERTED, false, true);
+	
+	SendStartCont();
+	SendCommandCont(ILI9341CMD_Memory_Write);
+	
+	//I,J offset -1;
+	for (int i = 1; i <= 240/blocksize; ++i){
+		for (int z = 1; z <= blocksize; ++z){
+			for (int j = 1; j <= 320; j+=blocksize){
+				for (int k = 0; k < blocksize; ++k){
+					SendDataCont16_t(getVal((j) + (i)));
+				}
+			}
+		}
+	}
+	
+	SendEndCont();
+	
+	Helper::Time::delay1_5us(2000 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
+	
+	SetRotation(ILI_ROTATION_MODE::PORTRAIT, false, true);
+	
+	SendStartCont();
+	SendCommandCont(ILI9341CMD_Memory_Write);
+	
+	//I,J offset -1;
+	
+	for (int z = 1; z <= 320/blocksize; ++z){
+		for (int k = 1; k <= blocksize; ++k){
+			for (int i = 1; i <= 240; ++i){
+				SendDataCont16_t(getVal(z));
+			}
+		}
+	}
+	
+	SendEndCont();
+	
+	Helper::Time::delay1_5us(2000 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
+	
+	SetRotation(ILI_ROTATION_MODE::PORTRAIT_INVERTED, false, true);
+	
+	SendStartCont();
+	SendCommandCont(ILI9341CMD_Memory_Write);
+	
+	//I,J offset -1;
+	
+	for (int z = 1; z <= 320/blocksize; ++z){
+		for (int k = 1; k <= blocksize; ++k){
+			for (int i = 1; i <= 240; ++i){
+				SendDataCont16_t(getVal(z));
+			}
+		}
+	}
+	
+	SendEndCont();
+	
+	Helper::Time::delay1_5us(2000 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
+	
+	return;
+}
+
 // default destructor
-ILI9341Driver::~ILI9341Driver()
-{
-} //~ILI9341Driver
+ILI9341Driver::~ILI9341Driver(){
+}

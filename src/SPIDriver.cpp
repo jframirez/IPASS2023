@@ -23,7 +23,7 @@ SPIDriver::SPIDriver(	PINDriver & misoPin,
 						chipSelectDecoder(csDecoder),
 						SPIreg(spiReg){
 	SPIreg->SPI_MR |= SPI_MR_MSTR | SPI_MR_MODFDIS;
-	SPIreg->SPI_CSR[0] |= SPI_CSR_NCPHA | SPI_CSR_SCBR(8); //Can be as low as 2
+	SPIreg->SPI_CSR[0] |= SPI_CSR_NCPHA | SPI_CSR_SCBR(3); //Can be as low as 2
 	SPIreg->SPI_CR |= SPI_CR_SPIEN;	
 	
 	while(!(SPIreg->SPI_SR & SPI_SR_SPIENS)){};				

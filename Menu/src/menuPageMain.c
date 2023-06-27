@@ -745,18 +745,47 @@ static const struct menuTextBox mainText = {
 	.rowLenght = 163,
 };
 
-static const struct menuTextBox subMenuBar = {
-	.colStart = 0,
-	.colEnd = 320,
-	.colLenghtv = 320,
+// static const struct menuTextBox subMenuBar = {
+// 	.colStart = 0,
+// 	.colEnd = 320,
+// 	.colLenghtv = 320,
+// 	.rowStart = 201,
+// 	.rowEnd = 240,
+// 	.rowLenght = 39,
+// };
+
+static const struct menuTextBox subMenuLeftBottom = {
+	.colStart = 5,
+	.colEnd = 105, //5 - 100 - 5 - 100 - 5 - 100 - 5
+	.colLenghtv = 100,
+	.rowStart = 201,
+	.rowEnd = 240,
+	.rowLenght = 39,
+};
+
+static const struct menuTextBox subMenuCenterBottom = {
+	.colStart = 110,
+	.colEnd = 210,
+	.colLenghtv = 100,
+	.rowStart = 201,
+	.rowEnd = 240,
+	.rowLenght = 39,
+};
+
+static const struct menuTextBox subMenuRightBottom = {
+	.colStart = 215,
+	.colEnd = 315,
+	.colLenghtv = 100,
 	.rowStart = 201,
 	.rowEnd = 240,
 	.rowLenght = 39,
 };
 
 static const struct menuTextBox *textBox[] = {
-	&mainText,
-	&subMenuBar
+	&mainText,//	&subMenuBar,
+	&subMenuLeftBottom,
+	&subMenuCenterBottom,
+	&subMenuRightBottom
 };
 
 const struct menu menuPageMain = {
@@ -765,5 +794,5 @@ const struct menu menuPageMain = {
 	.menuBitmap = mainMenuPage,
 	.rotation = 0,
 	.menuTextBoxes = textBox,
-	.textBoxesCount = 2,
+	.textBoxesCount = 4,
 };

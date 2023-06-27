@@ -13,5 +13,7 @@
 
 extern const struct menu menuPageSplash;
 extern const struct menu menuPageMain;
+extern const struct menu menuPageSelfTest;
+extern const struct menu fullImageTestPage;
 
 #endif /* MENUPAGESPLASH_H_ */

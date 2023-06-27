@@ -6,7 +6,7 @@
 */
 
 
-#include "../include/MenuManager.h"
+#include "MenuManager.h"
 
 // default constructor
 MenuManager::MenuManager(ILI9341Driver & LCD):
@@ -22,9 +22,11 @@ MenuManager::MenuManager(ILI9341Driver & LCD):
 	myLCD.SendEndCont();
 } //MenuManager
 
-int MenuManager::SetMenu(const menu * n, ILI_COLORS backfill){
+int MenuManager::SetMenu(const menu * m, ILI_COLORS backfill){
 	
-	currentMenu = n;
+	usedOnce = false;
+	
+	currentMenu = m;
 	
 	myLCD.SetRotation((ILI_ROTATION_MODE)currentMenu->rotation, false, true);
 	
@@ -61,6 +63,7 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 	
 		
 	if(buffer[0] == '\0'){
+		Helper::Debug::DebugPrint("WriteTextLabel EMPTY\r\n");
 		return;
 	}
 
@@ -68,15 +71,19 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 	
 	uint pasetOffset = 0;
 	
-	if(usedOnce && contWrite){
-		pasetOffset = _cur_WriteTextLabel_fullHeightOffset;
+	if(usedOnce && contWrite && (_prevLabel == static_cast<int>(n))){
+		pasetOffset = _cur_WriteTextLabel_fullHeightOffset_lastTrue;
+		_cur_WriteTextLabel_fullHeightOffset = _cur_WriteTextLabel_fullHeightOffset_lastTrue;
 	}else{
 		_cur_WriteTextLabel_fullHeightOffset = 0;
 	}
 	
+	
+	
 	uint offset_height = 0;
 	
-	uint fullHeightOffset = myLCD.rowStart + pasetOffset;
+	//uint fullHeightOffset = myLCD.rowStart + pasetOffset;
+	uint fullHeightOffset = currentMenu->menuTextBoxes[n]->rowStart + pasetOffset;
 	uint8_t currentGlyph = buffer[0];
 	uint bufferPrintOffset = 0;
 	uint glyphCounter = 0;
@@ -123,7 +130,7 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 		//check if next line fits else reset line height
 		if(contWrite){
 			if((_cur_WriteTextLabel_fullHeightOffset + curFont.height) >= myLCD.rowLenght){
-				Helper::Debug::DebugPrint("\r\nTEST OFFSET\r\n");
+				//Helper::Debug::DebugPrint("\r\nTEST OFFSET\r\n");
 				_cur_WriteTextLabel_fullHeightOffset = 0;
 				fullHeightOffset = 0;
 				myLCD.SendEndCont();
@@ -163,7 +170,7 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 			//Helper::Debug::DebugPrint("C");	
 			
 			glyphCounter = 0;
-			currentGlyph = buffer[glyphCounter + bufferPrintOffset]; ///initial buffer pos for line.
+			currentGlyph = buffer[glyphCounter + bufferPrintOffset]; //initial buffer pos for line.
 			
 			if((currentGlyph == '\r')){
 				bufferPrintOffset += 1;
@@ -260,7 +267,11 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 	myLCD.SendEndCont();
 	
 	usedOnce = true;
-	Helper::Debug::DebugPrint(std::to_string(_cur_WriteTextLabel_fullHeightOffset));
+	if(contWrite){
+		_cur_WriteTextLabel_fullHeightOffset_lastTrue = _cur_WriteTextLabel_fullHeightOffset;
+		_prevLabel = n;
+	}
+	//Helper::Debug::DebugPrint(std::to_string(_cur_WriteTextLabel_fullHeightOffset) + "\r\n");
 }
 
 // default destructor

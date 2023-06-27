@@ -17,8 +17,8 @@ namespace Helper{
 		}
 		
 		void delay1_5us(TIME_UNIT_1_5US us){
-		uint32_t startTime = TC2->TC_CHANNEL[2].TC_CV;
-		while(TC2->TC_CHANNEL[2].TC_CV <= ((uint32_t)us + startTime)){};
+			uint32_t startTime = TC2->TC_CHANNEL[2].TC_CV;
+			while(TC2->TC_CHANNEL[2].TC_CV <= ((uint32_t)us + startTime)){};
 		}
 		
 		
