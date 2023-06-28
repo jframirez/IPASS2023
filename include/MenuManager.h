@@ -57,6 +57,8 @@ public:
 	 */
 	void WriteTextLabel(uint n, font curFont, std::string sBuf, bool contWrite = false);
 	
+	void ClearTextLabel(uint n, ILI_COLORS clearColor = ILI_COLORS::BLACK);
+	
 	~MenuManager();
 protected:
 private:

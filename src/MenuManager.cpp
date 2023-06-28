@@ -59,6 +59,45 @@ int MenuManager::SetMenu(const menu * m, ILI_COLORS backfill){
 	return 1;
 }
 
+void MenuManager::ClearTextLabel(uint n, ILI_COLORS clearColor){
+	myLCD.SendStartCont();
+
+	//set caset
+	myLCD.SendCommandCont(ILI9341CMD_Column_Address_Set);
+	//start is 50 and end is width - 50;
+	myLCD.SendDataCont16_t(currentMenu->menuTextBoxes[n]->colStart); //start
+	myLCD.SendDataCont16_t(currentMenu->menuTextBoxes[n]->colEnd -1); //end
+	
+	//should be aliased from LCD , as soon as rotation changes this bugs out
+	myLCD.colStart = currentMenu->menuTextBoxes[n]->colStart; //set this + bounds check
+	myLCD.colEnd = currentMenu->menuTextBoxes[n]->colEnd; //set this + bounds check
+	myLCD.colLenght = currentMenu->menuTextBoxes[n]->colLenghtv;
+	
+	myLCD.rowStart = currentMenu->menuTextBoxes[n]->rowStart; //set this + bounds check
+	myLCD.rowEnd = currentMenu->menuTextBoxes[n]->rowEnd; //set this + bounds check
+	myLCD.rowLenght = currentMenu->menuTextBoxes[n]->rowLenght;
+	
+	//set paset
+	myLCD.SendCommandCont(ILI9341CMD_Page_Address_Set);
+	//set paset to start 120
+	// end is max
+	myLCD.SendDataCont16_t(currentMenu->menuTextBoxes[n]->rowStart); //start
+	myLCD.SendDataCont16_t(currentMenu->menuTextBoxes[n]->rowEnd -1); //end
+	
+	myLCD.SendEndCont();
+	
+	myLCD.SendStartCont();
+	myLCD.SendCommandCont(ILI9341CMD_Memory_Write);
+	
+	for (uint row = 0; row < currentMenu->menuTextBoxes[n]->rowLenght; ++row){
+		for(uint column = 0; column < currentMenu->menuTextBoxes[n]->colLenghtv; ++column){
+			myLCD.SendDataCont16_t(clearColor);
+		}
+	}
+	
+	myLCD.SendEndCont();
+}
+
 void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool contWrite){
 	
 		

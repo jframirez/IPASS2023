@@ -41,6 +41,12 @@
 
 #include "P1Decoder.h"
 
+enum class SelfTestErrorCode{
+	P1DecodeError = -1,
+	P1ObjectListError = -2,
+	
+};
+
 void TC0_Handler(){
 	
 }
@@ -61,7 +67,7 @@ void PIOB_Handler(){
 	debugISR_PIOB = isrVal;
 }
 
-int SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram);
+SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram);
 
 int main(void)
 {
@@ -237,9 +243,9 @@ int main(void)
 	/* Self test */	
 	if(rotaryButton.GetState() == PIO_PIN_STATE::HIGH){
 		//should return selftest erro code enum
-		int result = SelfTest(LCD, LCDSpi, USART3);
+		SelfTestErrorCode result = SelfTest(LCD, LCDSpi, USART3);
 		
-		if(result < 0){
+		if(static_cast<int>(result) < 0){
 			Helper::Debug::DebugPrint("Self test detected an error: ");
 			//case result
 			// describe error code from enum
@@ -394,7 +400,9 @@ int main(void)
 	}
 }
 
-int SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram){
+
+
+SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram){
 	Helper::Debug::DebugPrint("Running self test: \r\n");
 	
 	//Menu
@@ -407,7 +415,11 @@ int SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram){
 	//Menu
 	MenuManager testMenu(LCD);
 	
-	testMenu.SetMenu(&fullImageTestPage, ILI_COLORS::BLACK);
+	testMenu.SetMenu(&menuPageSelfTest, ILI_COLORS::BLACK);
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, "Test full image in menu context");
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	
+	//testMenu.SetMenu(&fullImageTestPage, ILI_COLORS::BLACK);
 	
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
@@ -415,7 +427,7 @@ int SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram){
 	testMenu.SetMenu(&menuPageSelfTest, ILI_COLORS::BLACK);
 	
 	
-	testMenu.WriteTextLabel(0, font_ubuntumono_10, "TEST PRINT");
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, "TEST PRINT", true);
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "!!!!!!!!!!", true);
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "@@@@@@@@@@", true);
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "##########", true);
@@ -437,5 +449,58 @@ int SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram){
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "+++++++++++", true);
 	
-	return -1;
+	
+	testMenu.ClearTextLabel(0, ILI_COLORS::BLACK);
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	
+	/* P1 decoder test */
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
+	
+	P1Decoder p1test;
+	
+	/* Decode a correct string */
+	std::string currentTestP1Telegram = testP1TelegramCapture;
+	
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
+	int P1DecodeValue = P1Decoder::decodeP1(currentTestP1Telegram.c_str(), p1test);
+	
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Decode value : " + std::to_string(P1DecodeValue) + "expected 0"), true);
+	if (P1DecodeValue != 0){
+		return SelfTestErrorCode::P1DecodeError;
+	}
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 1/X-"), true);
+	
+	/* Test for channel count */
+	int channelCount = p1test.OBISChannelList.size();
+	
+	if (channelCount != 2){
+		testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
+		return SelfTestErrorCode::P1DecodeError;
+	}
+	
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 2/X-"), true);
+	
+	/* Test for correct amount of objects in channel */
+	for(auto &ptr: p1test.OBISChannelList){
+		int cN = ptr->getChannelNumber();
+		testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel #" + std::to_string(cN)), true);
+		if(cN == 0){
+			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Object count: " + std::to_string(ptr->getOBISObjectList().size()) + "expected 20"), true);
+			if(ptr->getOBISObjectList().size() != 20){
+				return SelfTestErrorCode::P1ObjectListError;
+			}
+			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 3/X-"), true);
+		}else if(cN == 1){
+			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Object count: " + std::to_string(ptr->getOBISObjectList().size()) + "expected 3"), true);
+			if(ptr->getOBISObjectList().size() != 3){
+				return SelfTestErrorCode::P1ObjectListError;
+			}
+			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 4/X-"), true);
+		}
+	}
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	
+	
+	return SelfTestErrorCode::P1DecodeError;
 }
