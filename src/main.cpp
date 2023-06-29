@@ -44,6 +44,7 @@
 enum class SelfTestErrorCode{
 	P1DecodeError = -1,
 	P1ObjectListError = -2,
+	P1CosemObjectError = -2,
 	
 };
 
@@ -246,17 +247,12 @@ int main(void)
 		SelfTestErrorCode result = SelfTest(LCD, LCDSpi, USART3);
 		
 		if(static_cast<int>(result) < 0){
-			Helper::Debug::DebugPrint("Self test detected an error: ");
-			//case result
-			// describe error code from enum
+			Helper::Debug::DebugPrint(	"Self test detected an error: " 
+										+ std::to_string(static_cast<int>(result)));
 		}
 	}
 	
-	
-	
 
-	
-	
 	//LED Flasher blocking
 	for(int i = 0; i < 20; ++i){
 		powerLed.Toggle();
@@ -359,7 +355,7 @@ int main(void)
 
 				OBISObject * deltaP1 = nullptr;
 				OBISObject * deltaP2 = nullptr;
-			 	for(auto &ptr: p1msg.OBISChannelList){
+			 	for(auto &ptr: p1msg.getAllOBISChannels()){
 			 		//Helper::Debug::DebugPrintVA("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
 			 		//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
 			 		for(auto &Optr: ptr->getOBISObjectList()){
@@ -448,10 +444,10 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "__________", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "+++++++++++", true);
+		
 	
-	
-	testMenu.ClearTextLabel(0, ILI_COLORS::BLACK);
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	testMenu.ClearTextLabel(0, ILI_COLORS::BLACK);
 	
 	/* P1 decoder test */
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
@@ -469,9 +465,14 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 		return SelfTestErrorCode::P1DecodeError;
 	}
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 1/X-"), true);
+
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("ID : " + p1test.getDeviceIdentifier() + "expected \\2M550E-1012"), true);
+	if(p1test.getDeviceIdentifier() == "\\2M550E-1012"){	
+		testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 2/X-"), true);
+	}
 	
 	/* Test for channel count */
-	int channelCount = p1test.OBISChannelList.size();
+	int channelCount = p1test.getAllOBISChannels().size();
 	
 	if (channelCount != 2){
 		testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
@@ -479,10 +480,15 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 	}
 	
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
-	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 2/X-"), true);
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 3/X-"), true);
+	
+	//PART TWO
+	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	
+	testMenu.ClearTextLabel(0, ILI_COLORS::BLACK);
 	
 	/* Test for correct amount of objects in channel */
-	for(auto &ptr: p1test.OBISChannelList){
+	for(auto &ptr: p1test.getAllOBISChannels()){
 		int cN = ptr->getChannelNumber();
 		testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel #" + std::to_string(cN)), true);
 		if(cN == 0){
@@ -490,16 +496,60 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 			if(ptr->getOBISObjectList().size() != 20){
 				return SelfTestErrorCode::P1ObjectListError;
 			}
-			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 3/X-"), true);
+			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 4/X-"), true);
 		}else if(cN == 1){
 			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Object count: " + std::to_string(ptr->getOBISObjectList().size()) + "expected 3"), true);
 			if(ptr->getOBISObjectList().size() != 3){
 				return SelfTestErrorCode::P1ObjectListError;
 			}
-			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 4/X-"), true);
+			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 5/X-"), true);
 		}
 	}
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	
+	testMenu.ClearTextLabel(0, ILI_COLORS::BLACK);
+	
+	
+	/* Testing Cosem objects in channels*/
+	OBISObject * deltaP1 = nullptr;
+	OBISObject * deltaP2 = nullptr;
+	
+	for(auto &ptr: p1test.getAllOBISChannels()){
+		for(auto &Optr: ptr->getOBISObjectList()){
+			if(Optr->getType() == OBISType::PDelivered){
+				deltaP1 = Optr;
+			}
+			if(Optr->getType() == OBISType::PReceived){
+				deltaP2 = Optr;
+			}
+		}
+	}
+	
+	/* Test CosemObject: 1
+	 * Verify if values in deltaP1 & deltaP2 are correct.
+	 */
+	
+	if(deltaP1->printValue() != "0.368kW"){
+		return SelfTestErrorCode::P1CosemObjectError;
+	}
+	if(deltaP2->printValue() != "0.168kW"){
+		return SelfTestErrorCode::P1CosemObjectError;
+	}
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 1/X-"), true);
+	
+	/* Test CosemObject: 2
+	 * Verify delta calculation of two objects works.
+	 */
+	
+	std::string deltaCalc = deltaP1->getMagicDelta(deltaP2);
+	if(deltaCalc != "0.200kW"){
+		return SelfTestErrorCode::P1CosemObjectError;
+	}
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 2/X-"), true);
+	
+	/* Test CosemObject: 3
+	 * Verify delta of two objects that can't be calculated
+	 */
 	
 	
 	return SelfTestErrorCode::P1DecodeError;

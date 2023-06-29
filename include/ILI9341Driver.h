@@ -230,6 +230,10 @@ public:
 	uint rowLenght = 239;
 	
 private:
+	
+	
+
+
 	ILI9341Driver( const ILI9341Driver &c );
 	ILI9341Driver& operator=( const ILI9341Driver &c );
 	

@@ -57,6 +57,14 @@ public:
 	 */
 	void WriteTextLabel(uint n, font curFont, std::string sBuf, bool contWrite = false);
 	
+	/**
+	 * Clear a label filling it with a ILI_COLORS.
+	 *
+	 * Write the specified colore in the text label and resets the text label offset.
+	 *
+	 * \param n number of textLabel in menu.
+	 * \param clearColor a ILI_COLORS to clear textLabel with.
+	 */
 	void ClearTextLabel(uint n, ILI_COLORS clearColor = ILI_COLORS::BLACK);
 	
 	~MenuManager();

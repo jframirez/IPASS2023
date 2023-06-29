@@ -96,6 +96,8 @@ void MenuManager::ClearTextLabel(uint n, ILI_COLORS clearColor){
 	}
 	
 	myLCD.SendEndCont();
+	
+	_cur_WriteTextLabel_fullHeightOffset_lastTrue = 0; //Reset value to start cursor at 0,0 for label
 }
 
 void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool contWrite){

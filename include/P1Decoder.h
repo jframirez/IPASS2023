@@ -15,7 +15,7 @@
 #include <iostream>
 #include <string>
 
-#include "CRCp1.h"
+#include "CrcP1.h"
 
 #include <ctime>
 
@@ -482,33 +482,39 @@ class OBISChannel{
 
 class P1Decoder{
 	public:
-	P1Decoder();
-	~P1Decoder();
+		P1Decoder();
+		~P1Decoder();
 
-	std::string deviceIdentifier = "";
-	// [0] --- [1] --- [2] --- [n]
-	// P1 --- M-bus0 --- Mbus1 --- Mbus n
-	std::list<OBISChannel*> OBISChannelList;
+		static int decodeP1(const char * msgStart, P1Decoder & p1C); //should be null terminated string
+
+		std::list<OBISChannel*> getAllOBISChannels();
+
+		OBISChannel * getOBISChannel(unsigned int n);
+
+		void removeOBISChannel(OBISChannel * n);
+
+		void clearAllOBISChannel();
 	
-	static int decodeP1(const char * msgStart, P1Decoder & p1C); //should be null terminated string
-
-	std::list<OBISChannel*> getAllOBISChannels();
-
-	OBISChannel * getOBISChannel(unsigned int n);
-
-	void removeOBISChannel(OBISChannel * n);
-
-	void clearAllOBISChannel();
+		std::string getDeviceIdentifier();
+		void setDeviceIdentifier(std::string id);
 
 	private:
+		
+		// [0] --- [1] --- [2] --- [n]
+		// P1 --- M-bus0 --- Mbus1 --- Mbus n
+		std::list<OBISChannel*> OBISChannelList;
 
-	static int OBISCodeSectionToInt(const char * &startSec);
-	static int OBISStringToIntLenght(const char * &startSec, unsigned int n);
-	static int OBISMoveCursorNextLine(const char * &startSec);
-	static int OBISAddObjectToChannel(OBISChannel * oChannel, const char * &startSec, int sec1, int sec2, int sec3);
+		static int OBISCodeSectionToInt(const char * &startSec);
+		static int OBISStringToIntLenght(const char * &startSec, unsigned int n);
+		static int OBISMoveCursorNextLine(const char * &startSec);
+		static int OBISAddObjectToChannel(OBISChannel * oChannel, const char * &startSec, int sec1, int sec2, int sec3);
+	
+		std::string deviceIdentifier = "";
 
-	P1Decoder( const P1Decoder &c );
-	P1Decoder& operator=( const P1Decoder &c );
+		P1Decoder( const P1Decoder &c );
+		P1Decoder& operator=( const P1Decoder &c );
+	
+		
 
 }; //P1Decoder
 
