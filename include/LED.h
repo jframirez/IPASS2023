@@ -10,9 +10,12 @@
 #define __LED_H__
 
 #include "sam.h"
-#include "PINDriver.h"
+#include "PinDriver.h"
 
-class LED : public PINDriver{
+/**
+ * Implementation fo PinDriver spefically for Leds.
+ */
+class Led : public PinDriver{
 	public:
 		
 		/**
@@ -29,16 +32,16 @@ class LED : public PINDriver{
 		 * Create a Led with a LED::LEDTYPE.
 		 *
 		 * \param portLed holds a Pio port.
-		 * \param pinLED pin number in Pio.
-		 * \param lT holds LED::LEDTYPE , default is LED::LEDTYPE::DEFAULT
+		 * \param pinLed pin number in Pio.
+		 * \param ledType holds LED::LEDTYPE , default is LED::LEDTYPE::DEFAULT
 		 * \see LED::LEDTYPE.
 		 */
-		LED(Pio * portLED, int pinLED, LED::LEDTYPE lT = LEDTYPE::DEFAULT);
+		Led(Pio * portLed, int pinLed, Led::LEDTYPE ledType = LEDTYPE::DEFAULT);
 		
 		/**
 		 * Default destructor.
 		 */
-		~LED();
+		~Led();
 		
 		/**
 		 * Turn the led on.
@@ -59,8 +62,8 @@ class LED : public PINDriver{
 	private:
 		bool inverted;
 				
-		LED( const LED &c );
-		LED& operator=( const LED &c );
+		Led( const Led &c );
+		Led& operator=( const Led &c );
 
 }; //LED
 

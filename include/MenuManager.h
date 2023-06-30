@@ -31,9 +31,23 @@ enum class MenuName{
 class MenuManager{
 //functions
 public:
-	MenuManager(ILI9341Driver & LCD);
+
+	/**
+	 * Manages all options relative to the current menu that is set.
+	 *
+	 * \param lcd reference to ILI9341Driver.
+	 */
+	MenuManager(ILI9341Driver & lcd);
 	
-	int SetMenu(const menu * name, ILI_COLORS backfill);
+	/**
+	 * Set the reference to the menu.
+	 *
+	 * This will also display the menu on  the lcd.
+	 *
+	 * \param name pointer to a const menu.
+	 * \param backfill background color of current menu.
+	 */
+	void SetMenu(const menu * name, ILI_COLORS backfill);
 	
 	//int SetImage(const image * img, int xStart, int yStart){
 	// per line

@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "PINDriver.h"
-#include "SPIDriver.h"
+#include "PinDriver.h"
+#include "SpiDriver.h"
 
 //Always in 4-wire 8-bit data serial interface
 //Define memory definitions
@@ -94,10 +94,10 @@ public:
 	 */
 	ILI9341Driver(	uint width,
 					uint height,
-					PINDriver & chipselect, 
-					PINDriver & dc, 
-					PINDriver & reset,
-					SPIDriver & spi);
+					PinDriver & chipselect, 
+					PinDriver & dc, 
+					PinDriver & reset,
+					SpiDriver & spi);
 
 	/**
 	 * Reset ILI9341 with a hardware reset.
@@ -169,7 +169,6 @@ public:
 	 * Send data (1 byte) during a continues stream of data.
 	 *
 	 * \param byte a uint8_t to send as data.
-	 * \return
 	 */
 	void SendDataCont(uint8_t byte);
 	
@@ -214,12 +213,98 @@ public:
 	void SetHeight(uint height);
 	
 	/**
+	 * Returns max_pixel_count in display
+	 * \return uint value of max_pixel_count
+	 */
+	uint GetMaxPixelCount();
+	
+	/**
+	 * Returns col_start
+	 * \return uint value of col_start
+	 */
+	uint GetColStart();
+	
+	/**
+	 * Returns col_end
+	 * \return uint value of col_end
+	 */
+	uint GetColEnd();
+	
+	/**
+	 * Returns col_lenght
+	 * \return uint value of col_lenght
+	 */
+	uint GetColLenght();
+	
+	/**
+	 * Returns row_start
+	 * \return uint value of row_start
+	 */
+	uint GetRowStart();
+	
+	/**
+	 * Returns row_end
+	 * \return uint value of row_end
+	 */
+	uint GetRowEnd();
+	
+	/**
+	 * Returns row_lenght
+	 * \return uint value of row_lenght
+	 */
+	uint GetRowLenght();
+	
+	//////////////////////////////////////////////////////////////////////////
+	
+	/**
+	 * Set col_start
+	 * \param val uint value to set col_start
+	 */
+	void SetColStart(uint val);
+	
+	/**
+	 * Set col_end
+	 * \param val uint value to set col_end
+	 */
+	void SetColEnd(uint val);
+	
+	/**
+	 * Set col_lenght
+	 * \param val uint value to set col_lenght
+	 */
+	void SetColLenght(uint val);
+	
+	/**
+	 * Set row_start
+	 * \param val uint value to set row_start
+	 */
+	void SetRowStart(uint val);
+	
+	/**
+	 * Set row_end
+	 * \param val uint value to set row_end
+	 */
+	void SetRowEnd(uint val);
+	
+	/**
+	 * Set row_lenght
+	 * \param val uint value to set row_lenght
+	 */
+	void SetRowLenght(uint val);
+	
+	/**
 	 * Default destructor.
 	 */
 	~ILI9341Driver();
 	
-	uint width = ILI9341_WIDTH_X; 
-	uint height = ILI9341_HEIGHT_Y; 
+	
+	
+	
+	
+private:
+	
+	uint width = ILI9341_WIDTH_X;
+	uint height = ILI9341_HEIGHT_Y;
 	uint max_pixel_count = ILI9341_WIDTH_X * ILI9341_HEIGHT_Y;
 	
 	uint colStart = 0;
@@ -228,21 +313,16 @@ public:
 	uint rowStart = 0;
 	uint rowEnd = 239;
 	uint rowLenght = 239;
-	
-private:
-	
-	
-
 
 	ILI9341Driver( const ILI9341Driver &c );
 	ILI9341Driver& operator=( const ILI9341Driver &c );
 	
 	//PINS
-	PINDriver & displaySS;
-	PINDriver & displayDC;
-	PINDriver & displayRESET;
+	PinDriver & displaySS;
+	PinDriver & displayDC;
+	PinDriver & displayRESET;
 	//Peri SPI
-	SPIDriver & mySPI;
+	SpiDriver & mySPI;
 	
 	ILI_SLEEP_MODE currentSleepMode = ILI_SLEEP_MODE::SLEEP_IN;
 	

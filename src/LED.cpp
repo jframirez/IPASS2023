@@ -6,59 +6,59 @@
 */
 
 
-#include "../include/LED.h"
+#include "../include/Led.h"
 
-LED::LED(Pio * portLED, int pinLED, LEDTYPE lT):
-	PINDriver(portLED, pinLED)
+Led::Led(Pio * portLed, int pinLed, LEDTYPE ledType):
+	PinDriver(portLed, pinLed)
 	{
 		inverted = false;
-		switch (lT){
+		switch (ledType){
 			case LEDTYPE::DEFAULT:
 			case LEDTYPE::INVERTED:
 				inverted = true;
 			case LEDTYPE::OPENCOLLECTOR:
 				//Write MultiDrive
-				PORT->PIO_MDER |= (1 << PIN);
+				port->PIO_MDER |= (1 << pin);
 			case LEDTYPE::OPENCOLLECTOR_INV:
-				PORT->PIO_MDER |= (1 << PIN);
+				port->PIO_MDER |= (1 << pin);
 				inverted = true;
 			default:
 				
-				PORT->PIO_PER |= (1 << PIN); //Set GPIO use
-				PORT->PIO_OER |= (1 << PIN); //Output Enable
-				PORT->PIO_CODR |= (1 << PIN); //Write LOW
+				port->PIO_PER |= (1 << pin); //Set GPIO use
+				port->PIO_OER |= (1 << pin); //Output Enable
+				port->PIO_CODR |= (1 << pin); //Write LOW
 				break;
 		}
 	
 }
 
-void LED::On(){
+void Led::On(){
 	if(inverted){
-		PORT->PIO_CODR |= (1 << PIN);
+		port->PIO_CODR |= (1 << pin);
 		return;
 	}
-	PORT->PIO_SODR |= (1 << PIN);
+	port->PIO_SODR |= (1 << pin);
 }
 
-void LED::Off(){	
+void Led::Off(){	
 	if(inverted){
-		PORT->PIO_SODR |= (1 << PIN);
+		port->PIO_SODR |= (1 << pin);
 		return;
 	}
-	PORT->PIO_CODR |= (1 << PIN);
+	port->PIO_CODR |= (1 << pin);
 	
 }
 
-void LED::Toggle(){
+void Led::Toggle(){
 	//Read current state.
-	uint32_t pinStatus = (PORT->PIO_PDSR & (1 << PIN));
+	uint32_t pinStatus = (port->PIO_PDSR & (1 << pin));
 	if(pinStatus){
-		PORT->PIO_CODR |= (1 << PIN);
+		port->PIO_CODR |= (1 << pin);
 	}else{
-		PORT->PIO_SODR |= (1 << PIN);
+		port->PIO_SODR |= (1 << pin);
 	}
 }
 
-LED::~LED(){
+Led::~Led(){
 	
-} //~LED
+} //~Led

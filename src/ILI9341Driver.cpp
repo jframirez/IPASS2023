@@ -20,10 +20,10 @@ uint16_t operator&(ILI_COLORS lhs, uint rhs){
 // default constructor
 ILI9341Driver::ILI9341Driver(	uint width,
 				uint height,
-				PINDriver & chipselect,
-				PINDriver & dc,
-				PINDriver & reset,
-				SPIDriver & spi):
+				PinDriver & chipselect,
+				PinDriver & dc,
+				PinDriver & reset,
+				SpiDriver & spi):
 				displaySS(chipselect),
 				displayDC(dc),
 				displayRESET(reset),
@@ -91,7 +91,7 @@ ILI9341Driver::ILI9341Driver(	uint width,
 void ILI9341Driver::SendCommandWithParamter(uint8_t command, int parameterN, ...){
 	CS_Enable();
 	DC_SetCommand();
-	mySPI.SPISend(command);
+	mySPI.SpiSend(command);
 	DC_SetData();
 
 	va_list args;
@@ -99,7 +99,7 @@ void ILI9341Driver::SendCommandWithParamter(uint8_t command, int parameterN, ...
 
 	for(int i = 0; i < parameterN; ++i){
 		uint8_t byte = (uint8_t)va_arg(args, int);
-		mySPI.SPISend(byte);
+		mySPI.SpiSend(byte);
 	}
 	
 	va_end(args);
@@ -143,7 +143,7 @@ void ILI9341Driver::SetSleepMode(ILI_SLEEP_MODE set){
 void ILI9341Driver::SendCommand(uint8_t byte){
 	CS_Enable();
 	DC_SetCommand();
-	mySPI.SPISend(byte);
+	mySPI.SpiSend(byte);
 	CS_Disable();	
 }
 
@@ -238,11 +238,65 @@ void ILI9341Driver::SendEndCont(){
 }
 void ILI9341Driver::SendCommandCont(uint8_t byte){
 	DC_SetCommand();
-	mySPI.SPISend(byte);
+	mySPI.SpiSend(byte);
 }
 void ILI9341Driver::SendDataCont(uint8_t byte){
 	DC_SetData();
-	mySPI.SPISend(byte);
+	mySPI.SpiSend(byte);
+}
+
+uint ILI9341Driver::GetMaxPixelCount(){
+	return max_pixel_count;
+}
+
+uint ILI9341Driver::GetColStart(){
+	return colStart;
+}
+
+uint ILI9341Driver::GetColEnd(){
+	return colEnd;
+}
+
+uint ILI9341Driver::GetColLenght(){
+	return colLenght;
+}
+
+uint ILI9341Driver::GetRowStart(){
+	return rowStart;
+}
+
+uint ILI9341Driver::GetRowEnd(){
+	return rowEnd;
+}
+
+uint ILI9341Driver::GetRowLenght(){
+	return rowLenght;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+void ILI9341Driver::SetColStart(uint val){
+	colStart = val;
+}
+
+void ILI9341Driver::SetColEnd(uint val){
+	colEnd = val;
+}
+
+void ILI9341Driver::SetColLenght(uint val){
+	colLenght = val;
+}
+
+void ILI9341Driver::SetRowStart(uint val){
+	rowStart = val;
+}
+
+void ILI9341Driver::SetRowEnd(uint val){
+	rowEnd = val;
+}
+
+void ILI9341Driver::SetRowLenght(uint val){
+	rowLenght = val;
 }
 
 void ILI9341Driver::SendTestPatternColorBlocks(){

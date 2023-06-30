@@ -19,20 +19,20 @@
 
 #include "component/pio.h"
 
-#include "../include/SPIDriver.h"
-#include "../include/PINDriver.h"
+#include "SpiDriver.h"
+#include "PinDriver.h"
 #include "MenuManager.h"
-#include "../include/ILI9341Driver.h"
+#include "ILI9341Driver.h"
 
-#include "../include/LED.h"
-#include "../include/Helper.h"
+#include "Led.h"
+#include "Helper.h"
 
-#include "../Font/include/font-ubuntumono-10.h"
-#include "../Font/include/font-ubuntumono-16.h"
-#include "../Font/include/font-ubuntumono-22.h"
-#include "../Font/include/font-ubuntumono-28.h"
-#include "../Font/include/font-ubuntumono-34.h"
-#include "../Font/include/font-ubuntumono-40.h"
+#include "font-ubuntumono-10.h"
+#include "font-ubuntumono-16.h"
+#include "font-ubuntumono-22.h"
+#include "font-ubuntumono-28.h"
+#include "font-ubuntumono-34.h"
+#include "font-ubuntumono-40.h"
 
 #include "MenuManager.h"
 #include "menuPageSplash.h"
@@ -40,6 +40,24 @@
 //#include "P1Controller.h"
 
 #include "P1Decoder.h"
+
+//String encoded for PC testing purpose
+//testP1Telegram is the example telegram from P1 compendium document,
+//The example is wrong in this document, this is the corrected version.
+const char * testP1Telegram = "/ISk5\\2MT382-1000\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(101209113020W)\r\n0-0:96.1.1(4B384547303034303436333935353037)\r\n1-0:1.8.1(123456.789*kWh)\r\n1-0:1.8.2(123456.789*kWh)\r\n1-0:2.8.1(123456.789*kWh)\r\n1-0:2.8.2(123456.789*kWh)\r\n0-0:96.14.0(0002)\r\n1-0:1.7.0(01.193*kW)\r\n1-0:2.7.0(00.000*kW)\r\n0-0:96.7.21(00004)\r\n0-0:96.7.9(00002)\r\n1-0:99.97.0(2)(0-0:96.7.19)(101208152415W)(0000000240*s)(101208151004W)(0000000301*s)\r\n1-0:32.32.0(00002)\r\n1-0:52.32.0(00001)\r\n1-0:72.32.0(00000)\r\n1-0:32.36.0(00000)\r\n1-0:52.36.0(00003)\r\n1-0:72.36.0(00000)\r\n0-0:96.13.0(303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F)\r\n1-0:32.7.0(220.1*V)\r\n1-0:52.7.0(220.2*V)\r\n1-0:72.7.0(220.3*V)\r\n1-0:31.7.0(001*A)\r\n1-0:51.7.0(002*A)\r\n1-0:71.7.0(003*A)\r\n1-0:21.7.0(01.111*kW)\r\n1-0:41.7.0(02.222*kW)\r\n1-0:61.7.0(03.333*kW)\r\n1-0:22.7.0(04.444*kW)\r\n1-0:42.7.0(05.555*kW)\r\n1-0:62.7.0(06.666*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(3232323241424344313233343536373839)\r\n0-1:24.2.1(101209112500W)(12785.123*m3)\r\n!E47C";
+
+const char * testP1Telegram2 = "/KFM5KAIFA-METER\r\n\r\n1-3:0.2.8(42)\r\n0-0:1.0.0(170124213128W)\r\n0-0:96.1.1(4530303236303030303234343934333135)\r\n1-0:1.8.1(000306.946*kWh)\r\n1-0:1.8.2(000210.088*kWh)\r\n1-0:2.8.1(000000.000*kWh)\r\n1-0:2.8.2(000000.000*kWh)\r\n0-0:96.14.0(0001)\r\n1-0:1.7.0(02.793*kW)\r\n1-0:2.7.0(00.000*kW)\r\n0-0:96.7.21(00001)\r\n0-0:96.7.9(00001)\r\n1-0:99.97.0(1)(0-0:96.7.19)(000101000006W)(2147483647*s)\r\n1-0:32.32.0(00000)\r\n1-0:52.32.0(00000)\r\n1-0:72.32.0(00000)\r\n1-0:32.36.0(00000)\r\n1-0:52.36.0(00000)\r\n1-0:72.36.0(00000)\r\n0-0:96.13.1()\r\n0-0:96.13.0()\r\n1-0:31.7.0(003*A)\r\n1-0:51.7.0(005*A)\r\n1-0:71.7.0(005*A)\r\n1-0:21.7.0(00.503*kW)\r\n1-0:41.7.0(01.100*kW)\r\n1-0:61.7.0(01.190*kW)\r\n1-0:22.7.0(00.000*kW)\r\n1-0:42.7.0(00.000*kW)\r\n1-0:62.7.0(00.000*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303331303033333738373931363136)\r\n0-1:24.2.1(170124210000W)(00671.790*m3)\r\n!29ED";
+
+const char * testP1Telegram3 = "/JFR5SIM-P1-METER\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(170124213128W)\r\n0-0:96.1.1(4530303236303030303234343934333135)\r\n1-0:1.8.1(000411.141*kWh)\r\n!0431";
+
+const char * testP1Telegram4 = "/JFR5SIM-P1-METER\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(170124213128W)\r\n0-0:96.1.1(4530303236303030303234343934333135)\r\n1-0:1.7.0(000482.745*kWh)\r\n!1793";
+
+const char * testP1TelegramCapture = "/ISK5\\2M550E-1012\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(230615210817S)\r\n0-0:96.1.1(4530303433303037343231343730323139)\r\n1-0:1.8.1(008378.196*kWh)\r\n1-0:1.8.2(004019.445*kWh)\r\n1-0:2.8.1(000499.523*kWh)\r\n1-0:2.8.2(001403.870*kWh)\r\n0-0:96.14.0(0001)\r\n1-0:1.7.0(00.368*kW)\r\n1-0:2.7.0(00.128*kW)\r\n0-0:96.7.21(00008)\r\n0-0:96.7.9(00005)\r\n1-0:99.97.0(3)(0-0:96.7.19)(190514051940S)(0000000554*s)(200924114954S)(0000008885*s)(211208115451W)(0000011472*s)\r\n1-0:32.32.0(00007)\r\n1-0:32.36.0(00001)\r\n0-0:96.13.0()\r\n1-0:32.7.0(238.2*V)\r\n1-0:31.7.0(002*A)\r\n1-0:21.7.0(00.368*kW)\r\n1-0:22.7.0(00.000*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303339303031393335343838303139)\r\n0-1:24.2.1(230615210459S)(04490.555*m3)\r\n!8CFC";
+
+const char * testP1TelegramCaptureNegVal = "/ISK5\\2M550E-1012\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(230615210817S)\r\n0-0:96.1.1(4530303433303037343231343730323139)\r\n1-0:1.8.1(008378.196*kWh)\r\n1-0:1.8.2(004019.445*kWh)\r\n1-0:2.8.1(000499.523*kWh)\r\n1-0:2.8.2(001403.870*kWh)\r\n0-0:96.14.0(0001)\r\n1-0:1.7.0(00.368*kW)\r\n1-0:2.7.0(00.828*kW)\r\n0-0:96.7.21(00008)\r\n0-0:96.7.9(00005)\r\n1-0:99.97.0(3)(0-0:96.7.19)(190514051940S)(0000000554*s)(200924114954S)(0000008885*s)(211208115451W)(0000011472*s)\r\n1-0:32.32.0(00007)\r\n1-0:32.36.0(00001)\r\n0-0:96.13.0()\r\n1-0:32.7.0(238.2*V)\r\n1-0:31.7.0(002*A)\r\n1-0:21.7.0(00.368*kW)\r\n1-0:22.7.0(00.000*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303339303031393335343838303139)\r\n0-1:24.2.1(230615210459S)(04490.555*m3)\r\n!BDD3";
+
+const char * testP1TelegramCaptureError = "/ISK5\\2M550E-1012\r\n\r\n1-3:0.2.8(50)\r\n0-0:1.0.0(230616144327S)\r\n0-0:96.1.1(4530303433303037343231343730323139)\r\n1-0:1.8.1(008382.642*kWh)\r\n1-0:1.8.2(004019.737*kWh)\r\n1-0:2.8.1(000499.523*kWh)\r\n1-0:2.8.2(001406.900*kWh)\r\n0-0:96.14.0(0002)\r\n1-0:1.7.0(00.000*kW)\r\n1-0:2.7.0(00.499*kW)\r\n0-0:96.7.21(00008)\r\n0-0:96.7.9(00005)\r\n1-0:99.97.0(3)(0-0:96.7.19)(190514051940S)(0000000554*s)(200924114954S)(0000008885*s)(211208115451W)(0000011472*s)\r\n1-0:32.32.0(00007)\r\n1-0:32.36.0(00001)\r\n0-0:96.13.0()\r\n1-0:32.7.0(238.6*V)\r\n1-0:31.7.0(002*A)\r\n1-0:21.7.0(00.000*kW)\r\n1-0:22.7.0(00.493*kW)\r\n0-1:24.1.0(003)\r\n0-1:96.1.0(4730303339303031393335343838303139)\r\n0-1:24.2.1(230616144002S)(04490.851*m3)\r\n!B1F2\r\n";
+
 
 enum class SelfTestErrorCode{
 	P1DecodeError = -1,
@@ -68,7 +86,7 @@ void PIOB_Handler(){
 	debugISR_PIOB = isrVal;
 }
 
-SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram);
+SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Telegram);
 
 int main(void)
 {
@@ -110,14 +128,14 @@ int main(void)
 	//TC2->TC_BCR |= TC_BCR_SYNC;
 	
 	/* Setup leds */
-	LED debugLED1(PIOB, 27);
-	LED debugLED2(PIOA, 21, LED::LEDTYPE::INVERTED);
-	LED debugLED3(PIOC, 30, LED::LEDTYPE::INVERTED);
+	Led debugLED1(PIOB, 27);
+	Led debugLED2(PIOA, 21, Led::LEDTYPE::INVERTED);
+	Led debugLED3(PIOC, 30, Led::LEDTYPE::INVERTED);
 	
-	LED powerLed(PIOD, 9, LED::LEDTYPE::OPENCOLLECTOR);
-	LED heartbeatLed(PIOD, 10, LED::LEDTYPE::OPENCOLLECTOR);
-	LED p1UartReceiveLed(PIOC, 2, LED::LEDTYPE::OPENCOLLECTOR);
-	LED debugLED7(PIOC, 4, LED::LEDTYPE::OPENCOLLECTOR);
+	Led powerLed(PIOD, 9, Led::LEDTYPE::OPENCOLLECTOR);
+	Led heartbeatLed(PIOD, 10, Led::LEDTYPE::OPENCOLLECTOR);
+	Led p1UartReceiveLed(PIOC, 2, Led::LEDTYPE::OPENCOLLECTOR);
+	Led debugLED7(PIOC, 4, Led::LEDTYPE::OPENCOLLECTOR);
 	
 	debugLED1.Off();
 	debugLED2.Off();
@@ -129,8 +147,8 @@ int main(void)
 	//A.9 = UTXD TX0
 	//A.8 = URXD RX0
 	
-	PINDriver uartRX(PIOA, 8);
-	PINDriver uartTX(PIOA, 9);
+	PinDriver uartRX(PIOA, 8);
+	PinDriver uartTX(PIOA, 9);
 	
 	uartRX.ControllerPIODisable();
 	uartTX.ControllerPIODisable();
@@ -145,9 +163,9 @@ int main(void)
 	while(!(UART->UART_SR & UART_SR_TXRDY)){}
 	
 	/* Rotary encoder setup */
-	PINDriver rotaryRight(PIOD, 7); //Arduino due pin 11
-	PINDriver rotaryLeft(PIOD, 8); //Arduino due pin 12
-	PINDriver rotaryButton(PIOB, 27); //Arduino due pin 13
+	PinDriver rotaryRight(PIOD, 7); //Arduino due pin 11
+	PinDriver rotaryLeft(PIOD, 8); //Arduino due pin 12
+	PinDriver rotaryButton(PIOB, 27); //Arduino due pin 13
 	
 	rotaryLeft.ControllerPIOEnable();
 	rotaryRight.ControllerPIOEnable();
@@ -175,21 +193,21 @@ int main(void)
 	NVIC_SetPriority(PIOB_IRQn, 2);
 
 	/* Pins used for the display setup */
-	PINDriver SPI0_MISO(PIOA, 25);
-	PINDriver SPI0_MOSI(PIOA, 26);
-	PINDriver SPI0_SPCK(PIOA, 27);
-	PINDriver DisplaySS(PIOC, 22);
-	PINDriver DisplayDC(PIOC, 29);
-	PINDriver DisplayRESET(PIOC, 21);
+	PinDriver SPI0_MISO(PIOA, 25);
+	PinDriver SPI0_MOSI(PIOA, 26);
+	PinDriver SPI0_SPCK(PIOA, 27);
+	PinDriver DisplaySS(PIOC, 22);
+	PinDriver DisplayDC(PIOC, 29);
+	PinDriver DisplayRESET(PIOC, 21);
 	
 	//CS = 8 = C.22
 	//RESET = 9 = C.21
 	//D/C = 10 = A.28 / C.29
 	
 	//Orig
-	//PINDriver DisplaySS(PIOA, 28);
-	//PINDriver DisplayDC(PIOC, 21);
-	//PINDriver DisplayRESET(PIOC, 22);
+	//PinDriver DisplaySS(PIOA, 28);
+	//PinDriver DisplayDC(PIOC, 21);
+	//PinDriver DisplayRESET(PIOC, 22);
 	
 	SPI0_MISO.ControllerPIODisable();
 	SPI0_MOSI.ControllerPIODisable();
@@ -217,8 +235,8 @@ int main(void)
 	//D.4 = TXD3
 	//D.5 = RXD3
 	
-	PINDriver usart3TX(PIOD, 4);
-	PINDriver usart3RX(PIOD, 5);
+	PinDriver usart3TX(PIOD, 4);
+	PinDriver usart3RX(PIOD, 5);
 	
 	usart3TX.ControllerPIODisable();
 	usart3RX.ControllerPIODisable();
@@ -234,7 +252,8 @@ int main(void)
 	
 	debugLED1.On();
 	//SPI0
-	SPIDriver LCDSpi(SPI0_MISO, SPI0_MOSI, SPI0_SPCK, false, false, SPI0);
+	//SpiDriver LCDSpi(SPI0_MISO, SPI0_MOSI, SPI0_SPCK, false, false, SPI0);
+	SpiDriver LCDSpi(SPI0, false, false);
 	
 	//LCD
 	ILI9341Driver LCD(320, 240, DisplaySS, DisplayDC, DisplayRESET, LCDSpi);
@@ -253,7 +272,7 @@ int main(void)
 	}
 	
 
-	//LED Flasher blocking
+	//Led Flasher blocking
 	for(int i = 0; i < 20; ++i){
 		powerLed.Toggle();
 		heartbeatLed.Toggle();
@@ -348,40 +367,18 @@ int main(void)
 			//Helper::Debug::DebugPrint(receiveBuffer + "\r\n\t");	
 			
 			P1Decoder p1msg;
-			int P1DecodeValue = P1Decoder::decodeP1(receiveBuffer.c_str(), p1msg);
+			int P1DecodeValue = p1msg.decodeP1String(receiveBuffer.c_str());
 			
-			if(P1DecodeValue == 0){
-				//int deltaDisplayVal = 0;
-
-				OBISObject * deltaP1 = nullptr;
-				OBISObject * deltaP2 = nullptr;
-			 	for(auto &ptr: p1msg.getAllOBISChannels()){
-			 		//Helper::Debug::DebugPrintVA("CHANNEL NUMBER: %i\r\n", ptr->getChannelNumber());
-			 		//std::list<OBISObject*> tempList = ptr->getOBISObjectList();
-			 		for(auto &Optr: ptr->getOBISObjectList()){
-			 			if(Optr->getType() == OBISType::PDelivered){
-							//Helper::Debug::DebugPrint(Optr->print() + "\r\n");	
-			 				//p1Screen.WriteTextLabel(1, font_ubuntumono_22, std::string("PDel.(+P):\n" + Optr->printValue()).c_str());
-							//p1Screen.WriteTextLabel(1, font_ubuntumono_22, std::string("PDel.(+P):\n" + Optr->printValue()));	
-							deltaP1 = Optr;
-							//deltaDisplayVal +=1;
-			 			}
-						if(Optr->getType() == OBISType::PReceived){
-							//Helper::Debug::DebugPrint(Optr->print() + "\r\n");
-							//p1Screen.WriteTextLabel(1, font_ubuntumono_22, std::string("PDel.(+P):\n" + Optr->printValue()).c_str());
-							//p1Screen.WriteTextLabel(1, font_ubuntumono_22, std::string("PDel.(+P):\n" + Optr->printValue()));
-							deltaP2 = Optr;
-							//deltaDisplayVal +=1;
-						}
-			 		}	 
-			 	}
-				if((deltaP1 != nullptr) && (deltaP2 != nullptr)){
-					//Helper::Debug::DebugPrint("DELTA OF P+- P1\r\n");
-					p1Screen.WriteTextLabel(0, font_ubuntumono_16, std::string("PDel.(DP): " + deltaP1->getMagicDelta(deltaP2)), true);
-				}
+			if(P1DecodeValue == 0){				
+				
+				std::string deltaVal = p1msg.getDeltaString(0, ObisType::PDelivered,
+															0, ObisType::PReceived);
+				
+				p1Screen.WriteTextLabel(0, font_ubuntumono_16, std::string("PDel.(DP): " + deltaVal), true);
+				
 			}else{
 				Helper::Debug::DebugPrint("ERROR PARSING P1\r\n");
-				p1Screen.WriteTextLabel(0, font_ubuntumono_22, std::string("PDel.(DP):\nNaN"));
+				p1Screen.WriteTextLabel(0, font_ubuntumono_16, std::string("PARSE ERROR P1"));
 			}
 			
 			receiveBuffer = "";
@@ -398,7 +395,7 @@ int main(void)
 
 
 
-SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Telegram){
+SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Telegram){
 	Helper::Debug::DebugPrint("Running self test: \r\n");
 	
 	//Menu
@@ -458,7 +455,7 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 	std::string currentTestP1Telegram = testP1TelegramCapture;
 	
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
-	int P1DecodeValue = P1Decoder::decodeP1(currentTestP1Telegram.c_str(), p1test);
+	int P1DecodeValue = p1test.decodeP1String(currentTestP1Telegram.c_str());
 	
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Decode value : " + std::to_string(P1DecodeValue) + "expected 0"), true);
 	if (P1DecodeValue != 0){
@@ -472,7 +469,7 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 	}
 	
 	/* Test for channel count */
-	int channelCount = p1test.getAllOBISChannels().size();
+	int channelCount = p1test.getCosemChannelCount();
 	
 	if (channelCount != 2){
 		testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
@@ -488,51 +485,37 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 	testMenu.ClearTextLabel(0, ILI_COLORS::BLACK);
 	
 	/* Test for correct amount of objects in channel */
-	for(auto &ptr: p1test.getAllOBISChannels()){
-		int cN = ptr->getChannelNumber();
-		testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Channel #" + std::to_string(cN)), true);
-		if(cN == 0){
-			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Object count: " + std::to_string(ptr->getOBISObjectList().size()) + "expected 20"), true);
-			if(ptr->getOBISObjectList().size() != 20){
-				return SelfTestErrorCode::P1ObjectListError;
-			}
-			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 4/X-"), true);
-		}else if(cN == 1){
-			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Object count: " + std::to_string(ptr->getOBISObjectList().size()) + "expected 3"), true);
-			if(ptr->getOBISObjectList().size() != 3){
-				return SelfTestErrorCode::P1ObjectListError;
-			}
-			testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 5/X-"), true);
-		}
+
+	if(p1test.getCosemChannelSize(0) != 20){
+		return SelfTestErrorCode::P1ObjectListError;
 	}
+	
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 4/X-"), true);
+	
+	if(p1test.getCosemChannelSize(1) != 3){
+		return SelfTestErrorCode::P1ObjectListError;
+	}
+	
+	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("-Passed 5/X-"), true);
+	
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
 	testMenu.ClearTextLabel(0, ILI_COLORS::BLACK);
 	
 	
 	/* Testing Cosem objects in channels*/
-	OBISObject * deltaP1 = nullptr;
-	OBISObject * deltaP2 = nullptr;
-	
-	for(auto &ptr: p1test.getAllOBISChannels()){
-		for(auto &Optr: ptr->getOBISObjectList()){
-			if(Optr->getType() == OBISType::PDelivered){
-				deltaP1 = Optr;
-			}
-			if(Optr->getType() == OBISType::PReceived){
-				deltaP2 = Optr;
-			}
-		}
-	}
 	
 	/* Test CosemObject: 1
 	 * Verify if values in deltaP1 & deltaP2 are correct.
 	 */
 	
-	if(deltaP1->printValue() != "0.368kW"){
+	auto deltaP1String = p1test.getCosemStringFromChannel(0, ObisType::PDelivered);
+	auto deltaP2String = p1test.getCosemStringFromChannel(0, ObisType::PReceived);
+	
+	if(deltaP1String != "Power delivered (+P): 0.368kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
-	if(deltaP2->printValue() != "0.168kW"){
+	if(deltaP2String != "Power received (-P): 0.128kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 1/X-"), true);
@@ -541,8 +524,10 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SPIDriver & LCDspi, Usart * p1Te
 	 * Verify delta calculation of two objects works.
 	 */
 	
-	std::string deltaCalc = deltaP1->getMagicDelta(deltaP2);
-	if(deltaCalc != "0.200kW"){
+	auto deltaString = p1test.getDeltaString(0, ObisType::PDelivered, 0, ObisType::PReceived);
+	
+	//std::string deltaCalc = deltaP1->getDelta(deltaP2);
+	if(deltaString != "0.240kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
 	testMenu.WriteTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 2/X-"), true);

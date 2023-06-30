@@ -11,47 +11,54 @@
 
 #include "ILI9341Commands.h"
 #include "sam.h"
-#include "PINDriver.h"
+#include "PinDriver.h"
 
-class SPIDriver
-{
-//variables
-public:
-protected:
-private:
-	int baudrate;
-	PINDriver & SPI_MISO;
-	PINDriver & SPI_MOSI;
-	PINDriver & SPI_SPCK;
-	bool hardwareCS = false;
-	bool chipSelectDecoder = false;
-	Spi * SPIreg;
+/**
+ * Driver for a SPI bus.
+ */
+class SpiDriver{
 
-//functions
-public:
-	SPIDriver(	PINDriver & misoPin,
-				PINDriver & mosiPin,
-				PINDriver & spckPin,
-				bool hardwareCS,
-				bool chipSelectDecoder, 
-				Spi * spiReg);
-				
-	inline void SPISend(uint8_t byte){
-		SPIreg->SPI_TDR = (0xFF & byte);
-		while(!(SPIreg->SPI_SR & SPI_SR_TXEMPTY)){};
-	}
+	private:
 	
-	void SPIReceive();
+		int baudrate;
+		bool hardwareCS = false;
+		bool chipSelectDecoder = false;
+		Spi * SPIreg;
+
+	public:
+		
+		/**
+		 * Driver to control a SPI bus.
+		 *
+		 * \param spiReg an integer argument.
+		 * \param hardwareCS is using hardware chip select.
+		 * \param chipSelectDecoder is using built in select decoder.
+		 */
+		SpiDriver(	Spi * spiReg,
+					bool hardwareCS,
+					bool chipSelectDecoder);
+		
+		/**
+		 * Inline function to send a uint8_t over the SPI bus.
+		 *
+		 * \param byte to send.
+		 */
+		inline void SpiSend(uint8_t byte){
+			SPIreg->SPI_TDR = (0xFF & byte);
+			while(!(SPIreg->SPI_SR & SPI_SR_TXEMPTY)){};
+		}
+	
+		//void SPIReceive();
 				
 				
-	~SPIDriver();
-protected:
-private:
-	SPIDriver( const SPIDriver &c );
-	SPIDriver& operator=( const SPIDriver &c );
+		~SpiDriver();
+
+	private:
+		SpiDriver( const SpiDriver &c );
+		SpiDriver& operator=( const SpiDriver &c );
 	
 	
 
-}; //SPI_imp
+};
 
 #endif //__SPIDRIVER_H__

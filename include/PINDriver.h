@@ -1,5 +1,5 @@
 /* 
-* PINDriver.h
+* PinDriver.h
 *
 * Created: 9-5-2023 05:14:02
 * Author: Jordan
@@ -46,10 +46,10 @@ enum class PIO_LEVEL_SELECT{
  * on the pin that fall under Parallel Input/Output Controller (PIO)
  *
  */
-class PINDriver{
+class PinDriver{
 	protected:
-		Pio * PORT;
-		int PIN;
+		Pio * port; /**< port where pin is located */
+		int pin; /**< pin number */
 
 	public:
 	
@@ -59,130 +59,179 @@ class PINDriver{
 		 * \param port Pio port that contains the pin.
 		 * \param pin Pin number.
 		 */
-		PINDriver(Pio * port, int pin);
+		PinDriver(Pio * port, int pin);
 	
 		
 		/**
-		 * Brief.
+		 * Enable PIO on pin.
 		 */
 		inline void ControllerPIOEnable(){
-			PORT->PIO_PER |= ( 1 << PIN);
+			port->PIO_PER |= ( 1 << pin);
 		}
 
 		/**
-		 * Brief.
+		 * Disable PIO on pin.
 		 */
 		inline void ControllerPIODisable(){
-			PORT->PIO_PDR |= ( 1 << PIN);
+			port->PIO_PDR |= ( 1 << pin);
 		}
 
 		/**
-		 * Brief.
+		 * Set peripheral function of pin
+		 *
+		 * \param abVal PIO_ABSR_SELECT select peripheral type
+		 * \see PIO_ABSR_SELECT
 		 */
 		inline void PeripheralABSelect(PIO_ABSR_SELECT abVal){
 			if(abVal == PIO_ABSR_SELECT::PIO_ABSR_A){
-				PORT->PIO_ABSR &= ~(1 << PIN);
+				port->PIO_ABSR &= ~(1 << pin);
 			}
 		
 			if(abVal == PIO_ABSR_SELECT::PIO_ABSR_B){
-				PORT->PIO_ABSR |= (1 << PIN);
+				port->PIO_ABSR |= (1 << pin);
 			}
 		}
 	
 		/**
-		 * Brief.
+		 * Set pin to output and set the output value
+		 *
+		 * \param val set pin to PIO_PIN_STATE
+		 * \see PIO_PIN_STATE
 		 */
 		inline void SetOutput(PIO_PIN_STATE val){
-			PORT->PIO_PER |= (1 << PIN); //Set GPIO use
-			PORT->PIO_OER |= (1 << PIN); //Output Enable
+			port->PIO_PER |= (1 << pin); //Set GPIO use
+			port->PIO_OER |= (1 << pin); //Output Enable
 			if(val == PIO_PIN_STATE::LOW){
-				PORT->PIO_CODR |= (1 << PIN);
+				port->PIO_CODR |= (1 << pin);
 			}
 		
 			if(val == PIO_PIN_STATE::HIGH){
-				PORT->PIO_SODR |= (1 << PIN);
+				port->PIO_SODR |= (1 << pin);
 			}
 		}
 		
+		/**
+		 * Get current value of pin.
+		 *
+		 * \return PIO_PIN_STATE value of pin
+		 * \see PIO_PIN_STATE
+		 */
 		inline PIO_PIN_STATE GetState(){
-			uint32_t pinStatus = (PORT->PIO_PDSR & (1 << PIN));
+			uint32_t pinStatus = (port->PIO_PDSR & (1 << pin));
 			if(pinStatus){
 				return PIO_PIN_STATE::HIGH;
 			}
 			return PIO_PIN_STATE::LOW;
 		}
 		
+		/**
+		 * Set input filter type for pin.
+		 *
+		 * If filter is of type PIO_INPUT_FILTER::DEBOUNCE
+		 * the clkDiv parameter gets used to set the clock divider
+		 * value for debouncing.
+		 *
+		 * \param filter an integer argument.
+		 * \param clkDiv if filter is PIO_INPUT_FILTER::DEBOUNCE set this value to clock divider.
+		 * \see PIO_INPUT_FILTER
+		 */
 		inline void SetInputFilter(PIO_INPUT_FILTER filter, uint16_t clkDiv = 0){
 			if(filter == PIO_INPUT_FILTER::GLITCH){
-				PORT->PIO_SCIFSR |= (1 << PIN);
+				port->PIO_SCIFSR |= (1 << pin);
 			}
 			if(filter == PIO_INPUT_FILTER::DEBOUNCE){
-				PORT->PIO_DIFSR |= (1 << PIN);
-				PORT->PIO_SCDR = (clkDiv & 0x3FFF); //Remove top 2 bits
+				port->PIO_DIFSR |= (1 << pin);
+				port->PIO_SCDR = (clkDiv & 0x3FFF); //Remove top 2 bits
 			}
 			
 		}
 		
+		/**
+		 * Disable input filter on pin.
+		 */
 		inline void DisableInputFilter(){
-			PORT->PIO_IFDR |= (1 << PIN);
+			port->PIO_IFDR |= (1 << pin);
 		}
 		
+		/**
+		 * Enable interrupt on pin.
+		 */
 		inline void InterruptEnable(){
-			PORT->PIO_IER |= (1 << PIN);
-		}
-	
-		inline void InterruptDisable(){
-			PORT->PIO_IDR |= (1 << PIN);
+			port->PIO_IER |= (1 << pin);
 		}
 		
+		/**
+		 * Disable interrupt on pin.
+		 */
+		inline void InterruptDisable(){
+			port->PIO_IDR |= (1 << pin);
+		}
+		
+		/**
+		 * Set the type of additional interrupt with PIO_LEVEL_SELECT.
+		 * 
+		 * \param level set the type the additional interrupt uses.
+		 * \see PIO_LEVEL_SELECT
+		 */
 		inline void EnableAdditionalInterruptMode(PIO_LEVEL_SELECT level){
 			
-			PORT->PIO_AIMER |= (1 << PIN);
+			port->PIO_AIMER |= (1 << pin);
 			
 			switch (level){
 				case PIO_LEVEL_SELECT::FALLING_EDGE:
-					PORT->PIO_ESR |= (1 << PIN);
-					PORT->PIO_FELLSR |= (1 << PIN);
+					port->PIO_ESR |= (1 << pin);
+					port->PIO_FELLSR |= (1 << pin);
 					break;
 				case PIO_LEVEL_SELECT::RISING_EDGE:
-					PORT->PIO_ESR |= (1 << PIN);
-					PORT->PIO_REHLSR |= (1 << PIN);
+					port->PIO_ESR |= (1 << pin);
+					port->PIO_REHLSR |= (1 << pin);
 					break;
 				case PIO_LEVEL_SELECT::LOW_LEVEL:
-					PORT->PIO_LSR |= (1 << PIN);
-					PORT->PIO_FELLSR |= (1 << PIN);
+					port->PIO_LSR |= (1 << pin);
+					port->PIO_FELLSR |= (1 << pin);
 					break;
 				case PIO_LEVEL_SELECT::HIGH_LEVEL:
-					PORT->PIO_LSR |= (1 << PIN);
-					PORT->PIO_REHLSR |= (1 << PIN);
+					port->PIO_LSR |= (1 << pin);
+					port->PIO_REHLSR |= (1 << pin);
 					break;
 			}
 		}
 		
+		/**
+		 * Disable additional interrupt mode by resetting
+		 * the registers to default values.
+		 */
 		inline void DisableAdditionalInterruptMode(){
-			PORT->PIO_AIMDR |= (1 << PIN);
+			port->PIO_AIMDR |= (1 << pin);
 			
 			//Reset registers to default
-			PORT->PIO_ESR |= (1 << PIN);
-			PORT->PIO_FELLSR |= (1 << PIN);
+			port->PIO_ESR |= (1 << pin);
+			port->PIO_FELLSR |= (1 << pin);
 		}
 		
+		/**
+		 * Enable internal pull-up on pin.
+		 */
 		inline void EnablePullUp(){
-			PORT->PIO_PUER |= (1 << PIN);
+			port->PIO_PUER |= (1 << pin);
 		}
 		
+		/**
+		 * Disable internal pull-up on pin.
+		 */
 		inline void DisablePullUp(){
-			PORT->PIO_PUDR |= (1 << PIN);
+			port->PIO_PUDR |= (1 << pin);
 		}
-		
-		 //Peripheral AB Select PIO_ABSR
 	
-		~PINDriver();
+		/**
+		 * Default destructor.
+		 */
+		~PinDriver();
 		
 	private:
-		PINDriver( const PINDriver &c );
-		PINDriver& operator=( const PINDriver &c );
+		PinDriver( const PinDriver &c );
+		PinDriver& operator=( const PinDriver &c );
 
-}; //PINDriver
+}; //PinDriver
 
 #endif //__PINDRIVER_H__

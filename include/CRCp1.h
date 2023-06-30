@@ -1,11 +1,11 @@
 /*
-* CRCinline.h
+* CrcP1.h
 *
 * Created: 5-6-2023 16:31:00
 * Author: Jordan
 */
 
-/** \file CRCinline.h
+/** \file CrcP1.h
  * Generate the CRC with CRC-16/ARC using a input that does not need to be reversed.
  */
 
@@ -24,7 +24,9 @@ struct CrcReturn{
 	uint32_t crcByteLenght = 0; /**< uint32_t Holds the amount of bytes parsed during CRC calculation. */
 };
 
-
+/**
+ * Generate a 16 bit crc.
+ */
 class CrcP1
 {
 	

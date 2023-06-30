@@ -9,20 +9,20 @@
 #include "MenuManager.h"
 
 // default constructor
-MenuManager::MenuManager(ILI9341Driver & LCD):
-	myLCD(LCD){
+MenuManager::MenuManager(ILI9341Driver & lcd):
+	myLCD(lcd){
 		
 	//Fill LCD black
 	myLCD.SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);
 	myLCD.SendStartCont();
 	myLCD.SendCommandCont(ILI9341CMD_Memory_Write);
-	for (uint i = 0; i < myLCD.max_pixel_count; ++i){
+	for (uint i = 0; i < myLCD.GetMaxPixelCount(); ++i){
 		myLCD.SendDataCont16_t(ILI_COLORS::BLACK);
 	}
 	myLCD.SendEndCont();
 } //MenuManager
 
-int MenuManager::SetMenu(const menu * m, ILI_COLORS backfill){
+void MenuManager::SetMenu(const menu * m, ILI_COLORS backfill){
 	
 	usedOnce = false;
 	
@@ -55,8 +55,6 @@ int MenuManager::SetMenu(const menu * m, ILI_COLORS backfill){
 	}
 	
 	myLCD.SendEndCont();
-	
-	return 1;
 }
 
 void MenuManager::ClearTextLabel(uint n, ILI_COLORS clearColor){
@@ -69,13 +67,13 @@ void MenuManager::ClearTextLabel(uint n, ILI_COLORS clearColor){
 	myLCD.SendDataCont16_t(currentMenu->menuTextBoxes[n]->colEnd -1); //end
 	
 	//should be aliased from LCD , as soon as rotation changes this bugs out
-	myLCD.colStart = currentMenu->menuTextBoxes[n]->colStart; //set this + bounds check
-	myLCD.colEnd = currentMenu->menuTextBoxes[n]->colEnd; //set this + bounds check
-	myLCD.colLenght = currentMenu->menuTextBoxes[n]->colLenghtv;
+	myLCD.SetColStart(currentMenu->menuTextBoxes[n]->colStart); //set this + bounds check
+	myLCD.SetColEnd(currentMenu->menuTextBoxes[n]->colEnd); //set this + bounds check
+	myLCD.SetColLenght(currentMenu->menuTextBoxes[n]->colLenghtv);
 	
-	myLCD.rowStart = currentMenu->menuTextBoxes[n]->rowStart; //set this + bounds check
-	myLCD.rowEnd = currentMenu->menuTextBoxes[n]->rowEnd; //set this + bounds check
-	myLCD.rowLenght = currentMenu->menuTextBoxes[n]->rowLenght;
+	myLCD.SetRowStart(currentMenu->menuTextBoxes[n]->rowStart); //set this + bounds check
+	myLCD.SetRowEnd(currentMenu->menuTextBoxes[n]->rowEnd); //set this + bounds check
+	myLCD.SetRowLenght(currentMenu->menuTextBoxes[n]->rowLenght);
 	
 	//set paset
 	myLCD.SendCommandCont(ILI9341CMD_Page_Address_Set);
@@ -138,13 +136,13 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 	myLCD.SendDataCont16_t(currentMenu->menuTextBoxes[n]->colEnd -1); //end
 	
 	//should be aliased from LCD , as soon as rotation changes this bugs out
-	myLCD.colStart = currentMenu->menuTextBoxes[n]->colStart; //set this + bounds check
-	myLCD.colEnd = currentMenu->menuTextBoxes[n]->colEnd; //set this + bounds check
-	myLCD.colLenght = currentMenu->menuTextBoxes[n]->colLenghtv;
+	myLCD.SetColStart(currentMenu->menuTextBoxes[n]->colStart); //set this + bounds check
+	myLCD.SetColEnd(currentMenu->menuTextBoxes[n]->colEnd); //set this + bounds check
+	myLCD.SetColLenght(currentMenu->menuTextBoxes[n]->colLenghtv);
 	
-	myLCD.rowStart = currentMenu->menuTextBoxes[n]->rowStart; //set this + bounds check
-	myLCD.rowEnd = currentMenu->menuTextBoxes[n]->rowEnd; //set this + bounds check
-	myLCD.rowLenght = currentMenu->menuTextBoxes[n]->rowLenght;
+	myLCD.SetRowStart(currentMenu->menuTextBoxes[n]->rowStart); //set this + bounds check
+	myLCD.SetRowEnd(currentMenu->menuTextBoxes[n]->rowEnd); //set this + bounds check
+	myLCD.SetRowLenght(currentMenu->menuTextBoxes[n]->rowLenght);
 	
 	//set paset
 	myLCD.SendCommandCont(ILI9341CMD_Page_Address_Set);
@@ -170,7 +168,7 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 		offset_height = 0;
 		//check if next line fits else reset line height
 		if(contWrite){
-			if((_cur_WriteTextLabel_fullHeightOffset + curFont.height) >= myLCD.rowLenght){
+			if((_cur_WriteTextLabel_fullHeightOffset + curFont.height) >= myLCD.GetRowLenght()){
 				//Helper::Debug::DebugPrint("\r\nTEST OFFSET\r\n");
 				_cur_WriteTextLabel_fullHeightOffset = 0;
 				fullHeightOffset = 0;
@@ -185,13 +183,13 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 				myLCD.SendDataCont16_t(currentMenu->menuTextBoxes[n]->colEnd -1); //end
 				
 				//should be aliased from LCD , as soon as rotation changes this bugs out
-				myLCD.colStart = currentMenu->menuTextBoxes[n]->colStart; //set this + bounds check
-				myLCD.colEnd = currentMenu->menuTextBoxes[n]->colEnd; //set this + bounds check
-				myLCD.colLenght = currentMenu->menuTextBoxes[n]->colLenghtv;
+				myLCD.SetColStart(currentMenu->menuTextBoxes[n]->colStart); //set this + bounds check
+				myLCD.SetColEnd(currentMenu->menuTextBoxes[n]->colEnd); //set this + bounds check
+				myLCD.SetColLenght(currentMenu->menuTextBoxes[n]->colLenghtv);
 				
-				myLCD.rowStart = currentMenu->menuTextBoxes[n]->rowStart; //set this + bounds check
-				myLCD.rowEnd = currentMenu->menuTextBoxes[n]->rowEnd; //set this + bounds check
-				myLCD.rowLenght = currentMenu->menuTextBoxes[n]->rowLenght;
+				myLCD.SetRowStart(currentMenu->menuTextBoxes[n]->rowStart); //set this + bounds check
+				myLCD.SetRowEnd(currentMenu->menuTextBoxes[n]->rowEnd); //set this + bounds check
+				myLCD.SetRowLenght(currentMenu->menuTextBoxes[n]->rowLenght);
 				
 				//set paset
 				myLCD.SendCommandCont(ILI9341CMD_Page_Address_Set);
@@ -220,13 +218,13 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 
 			uint line_lenght = 0;
 			//for all glyphs
-			while(line_lenght <= myLCD.colLenght){
+			while(line_lenght <= myLCD.GetColLenght()){
 				//Helper::Debug::DebugPrint("D");	
 								
 				if((currentGlyph == '\0') | (currentGlyph == '\n')){ //special chars, these chars do not get printed, \r could be supported but would need to reset all offsets
 					//fill line
 					//Helper::Debug::DebugPrint("E");
-					for(uint k = 0; k < (myLCD.colLenght - line_lenght); ++k){
+					for(uint k = 0; k < (myLCD.GetColLenght() - line_lenght); ++k){
 						myLCD.SendDataCont16_t(backgroundFill); //BACKGROUND FILL
 					}
 					if(currentGlyph == '\0'){
@@ -241,7 +239,7 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 					line_lenght += curFont.glyphs[currentGlyph]->advance;
 				}
 				//offset_width += font_UbuntuMonoB_10.glyphs[currentGlyph]->cols;
-				if(line_lenght <= (myLCD.colLenght - 1 )){ //should be <= but for testing
+				if(line_lenght <= (myLCD.GetColLenght() - 1 )){ //should be <= but for testing
 					//Helper::Debug::DebugPrint("G");
 					int col_offset = curFont.glyphs[currentGlyph]->cols;
 					
@@ -276,7 +274,7 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 				}else{
 					//Helper::Debug::DebugPrint("X");
 					//send empty to fill line width or fill empty space in assigned field
-					for(uint k = 0; k < (myLCD.colLenght - (line_lenght - (curFont.glyphs[currentGlyph]->advance)) ); ++k){
+					for(uint k = 0; k < (myLCD.GetColLenght() - (line_lenght - (curFont.glyphs[currentGlyph]->advance)) ); ++k){
 						myLCD.SendDataCont16_t(backgroundFill); //BACKGROUND FILL
 					}
 					//Helper::Debug::DebugPrint("Y");
@@ -291,14 +289,14 @@ void MenuManager::WriteTextLabel(uint n, font curFont, std::string buffer, bool 
 			fullHeightOffset += 1;
 			_cur_WriteTextLabel_fullHeightOffset += 1;
 			
-			if(fullHeightOffset >= myLCD.rowEnd){
+			if(fullHeightOffset >= myLCD.GetRowEnd()){
 				break; //Break immediate on end of buffer
 			}
 		}
 		//Helper::Debug::DebugPrint("N");
 		bufferPrintOffset += glyphCounter;
 		
-		if(fullHeightOffset >= myLCD.rowEnd){
+		if(fullHeightOffset >= myLCD.GetRowEnd()){
 			_cur_WriteTextLabel_fullHeightOffset = 0;
 			break; //If buffer is on last row break
 		}

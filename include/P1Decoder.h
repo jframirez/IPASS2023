@@ -21,14 +21,7 @@
 
 #include <typeinfo>
 
-extern const char * testP1Telegram;
-extern const char * testP1Telegram2;
-extern const char * testP1Telegram3;
-extern const char * testP1Telegram4;
-extern const char * testP1TelegramCapture;
-extern const char * testP1TelegramCaptureError;
-
-enum class OBISType{
+enum class ObisType{
 	Version,
 	Power,
 	Timestamp,
@@ -70,135 +63,182 @@ enum class OBISType{
 
 };
 
-static const char * getOBISTypeString(OBISType t){
+static const char * getObisTypeString(ObisType t){
 	switch (t){
-		case OBISType::Version:
-		return "Version information";
-		case OBISType::Power:
-		return "Meter reading (Tariff 1)";
-		case OBISType::Timestamp:
-		return "Timestamp of msg";
-		case OBISType::Equipment_identifier:
-		return "Equipment identifier";
-		case OBISType::EDeliveredToClientT1:
-		return "Electricity delivered to client(T1)";
-		case OBISType::EDeliveredToClientT2:
-		return "Electricity delivered to client(T2)";
-		case OBISType::EDeliveredByClientT1:
-		return "Electricity delivered by client(T1)";
-		case OBISType::EDeliveredByClientT2:
-		return "Electricity delivered by client(T2)";
-		case OBISType::TariffIndicator:
-		return "Tariff indicator";
-		case OBISType::PDelivered:
-		return "Power delivered (+P)";
-		case OBISType::PReceived:
-		return "Power received (-P)";
-		case OBISType::NPowerFailuresInPhase:
-		return "Number of power failures in any phase";
-		case OBISType::NLongPowerFailuresInPhase:
-		return "Number of long power failures in any phase";
-		case OBISType::NVoltageSagsPL1:
-		return "Number of voltage sags in phase L1";
-		case OBISType::NVoltageSagsPL2:
-		return "Number of voltage sags in phase L2";
-		case OBISType::NVoltageSagsPL3:
-		return "Number of voltage sags in phase L3";
-		case OBISType::NVoltageSwellsPL1:
-		return "Number of voltage swells in phase L1";
-		case OBISType::NVoltageSwellsPL2:
-		return "Number of voltage swells in phase L2";
-		case OBISType::NVoltageSwellsPL3:
-		return "Number of voltage swells in phase L3";
-		case OBISType::TextMessage:
-		return "Text Message";
-		case OBISType::IVoltInL1:
-		return "Instantaneous voltage L1 in V resolution";
-		case OBISType::IVoltInL2:
-		return "Instantaneous voltage L2 in V resolution";
-		case OBISType::IVoltInL3:
-		return "Instantaneous voltage L3 in V resolution";
-		case OBISType::ICurrentInL1:
-		return "Instantaneous current L1 in A resolution.";
-		case OBISType::ICurrentInL2:
-		return "Instantaneous current L2 in A resolution.";
-		case OBISType::ICurrentInL3:
-		return "Instantaneous current L3 in A resolution.";
-		case OBISType::InsActivePowerL1P:
-		return "Instantaneous active power L1 (+P)";
-		case OBISType::InsActivePowerL2P:
-		return "Instantaneous active power L2 (+P)";
-		case OBISType::InsActivePowerL3P:
-		return "Instantaneous active power L3 (+P)";
-		case OBISType::InsActivePowerL1N:
-		return "Instantaneous active power L1 (-P)";
-		case OBISType::InsActivePowerL2N:
-		return "Instantaneous active power L2 (-P)";
-		case OBISType::InsActivePowerL3N:
-		return "Instantaneous active power L3 (-P)";
-		case OBISType::DeviceType:
-		return "Device type (M-bus)";
-		case OBISType::EquipmentIdentifierGas:
-		return "Equipment identifier (Gas)";
-		case OBISType::PowerFailureEventLog:
-		return "Power failure event log";
-		case OBISType::PowerFailureEventLogTime:
-		return "Event lenght";
-		case OBISType::GasDeliveredLog:
-		return "Last 5-minute value gas delivered";
-		case OBISType::GasDelivered:
-		return "Gas delivered";
+		case ObisType::Version:
+			return "Version information";
+		case ObisType::Power:
+			return "Meter reading (Tariff 1)";
+		case ObisType::Timestamp:
+			return "Timestamp of msg";
+		case ObisType::Equipment_identifier:
+			return "Equipment identifier";
+		case ObisType::EDeliveredToClientT1:
+			return "Electricity delivered to client(T1)";
+		case ObisType::EDeliveredToClientT2:
+			return "Electricity delivered to client(T2)";
+		case ObisType::EDeliveredByClientT1:
+			return "Electricity delivered by client(T1)";
+		case ObisType::EDeliveredByClientT2:
+			return "Electricity delivered by client(T2)";
+		case ObisType::TariffIndicator:
+			return "Tariff indicator";
+		case ObisType::PDelivered:
+			return "Power delivered (+P)";
+		case ObisType::PReceived:
+			return "Power received (-P)";
+		case ObisType::NPowerFailuresInPhase:
+			return "Number of power failures in any phase";
+		case ObisType::NLongPowerFailuresInPhase:
+			return "Number of long power failures in any phase";
+		case ObisType::NVoltageSagsPL1:
+			return "Number of voltage sags in phase L1";
+		case ObisType::NVoltageSagsPL2:
+			return "Number of voltage sags in phase L2";
+		case ObisType::NVoltageSagsPL3:
+			return "Number of voltage sags in phase L3";
+		case ObisType::NVoltageSwellsPL1:
+			return "Number of voltage swells in phase L1";
+		case ObisType::NVoltageSwellsPL2:
+			return "Number of voltage swells in phase L2";
+		case ObisType::NVoltageSwellsPL3:
+			return "Number of voltage swells in phase L3";
+		case ObisType::TextMessage:
+			return "Text Message";
+		case ObisType::IVoltInL1:
+			return "Instantaneous voltage L1 in V resolution";
+		case ObisType::IVoltInL2:
+			return "Instantaneous voltage L2 in V resolution";
+		case ObisType::IVoltInL3:
+			return "Instantaneous voltage L3 in V resolution";
+		case ObisType::ICurrentInL1:
+			return "Instantaneous current L1 in A resolution.";
+		case ObisType::ICurrentInL2:
+			return "Instantaneous current L2 in A resolution.";
+		case ObisType::ICurrentInL3:
+			return "Instantaneous current L3 in A resolution.";
+		case ObisType::InsActivePowerL1P:
+			return "Instantaneous active power L1 (+P)";
+		case ObisType::InsActivePowerL2P:
+			return "Instantaneous active power L2 (+P)";
+		case ObisType::InsActivePowerL3P:
+			return "Instantaneous active power L3 (+P)";
+		case ObisType::InsActivePowerL1N:
+			return "Instantaneous active power L1 (-P)";
+		case ObisType::InsActivePowerL2N:
+			return "Instantaneous active power L2 (-P)";
+		case ObisType::InsActivePowerL3N:
+			return "Instantaneous active power L3 (-P)";
+		case ObisType::DeviceType:
+			return "Device type (M-bus)";
+		case ObisType::EquipmentIdentifierGas:
+			return "Equipment identifier (Gas)";
+		case ObisType::PowerFailureEventLog:
+			return "Power failure event log";
+		case ObisType::PowerFailureEventLogTime:
+			return "Event lenght";
+		case ObisType::GasDeliveredLog:
+			return "Last 5-minute value gas delivered";
+		case ObisType::GasDelivered:
+			return "Gas delivered";
 		default:
-		return "NO VALUE IN OBISTypeString";
-		break;
+			return "NO VALUE IN OBISTypeString";
+			break;
 	}
 }
 
-class OBISObject{ //pure virtual class
+/**
+ * Base virtual class for COSEM objects.
+ */
+class CosemObject{ //pure virtual class
 	public:
-	virtual OBISType getType() const= 0;
-	virtual ~OBISObject() = default;
-	virtual bool operator== (const OBISObject &o) = 0;
-	virtual std::string getMagicDelta(OBISObject * x) = 0;
-	virtual std::string print() = 0;
-	virtual std::string printValue() = 0;
+		/**
+		 * Virtual get the OBIS type of the object.
+		 *
+		 * All OBIS objects are unique and can only contain
+		 * one type.
+		 * 
+		 * \return ObisType type of the object stored within.
+		 */
+		virtual ObisType getType() const= 0;
+		
+		/**
+		 * Virtual destructor.
+		 *
+		 * Implementation must include a destructor to handle
+		 * complex internal types.
+		 */
+		virtual ~CosemObject() = default;
+		
+		/**
+		 * Virtual operator ==.
+		 *
+		 * Compare the COSEM object internal OBIS type.
+		 *
+		 * \param o reference to a CosemObject.
+		 * \return bool is o of the same ObisType
+		 */
+		virtual bool operator== (const CosemObject &o) = 0;
+
+		/**
+		 * Calculates the delta between two CosemObjects.
+		 *
+		 * Internally compares the object to check if they are the same type.
+		 * If they are it calculates the delta and returns a string 
+		 * with the delta value.
+		 *
+		 * \param x pointer to a CosemObject.
+		 * \return std::string containing the printable delta
+		 */
+		virtual std::string getDelta(CosemObject * x) = 0;
+		
+		/**
+		 * Print out the COSEM object.
+		 *
+		 * Prints the ObisType string and the value
+		 * held by the CosemObject.
+		 *
+		 * \return std::string containing the CosemObject information
+		 */
+		virtual std::string print() = 0;
+		
+		/**
+		 * Print the COSEM value.
+		 *		 
+		 * \return std::string containing the printable value of the CosemObject
+		 */
+		virtual std::string printValue() = 0;
+
+		
 };
 
+/**
+ * Template implementation of CosemObject to hold numbers.
+ *
+ * Hold numbers of type T.
+ */
 template <typename T>
-class OBISObjectFloatingDecimal : public OBISObject{
+class CosemObjectNumber : public CosemObject{
 	private:
 	T value;
-	OBISType myObisType;
+	ObisType myObisType;
 	const char * unitText;
 	const char * formatP;
 
 	public:
-	OBISType getType() const{
+	ObisType getType() const{
 		return myObisType;
 	}
-
+	
+	/**
+	 * Get the internally stored number value.
+	 */
 	T getValue(){
 		return value;
 	}
 
-	T getDelta(OBISObject * &o){
-		auto x = dynamic_cast<OBISObjectFloatingDecimal<T>*>(o);
-		if(x){
-			return value - x->getValue();
-		}
-		return 0;
-	}
-
-	T getDelta2(OBISObjectFloatingDecimal<T> * &o){
-		auto x = o;
-		if(x){
-			return value - x->getValue();
-		}
-		return 0;
-	}
-
-	std::string getMagicDelta(OBISObject * o){
-		auto x = dynamic_cast<OBISObjectFloatingDecimal<T>*>(o);
+	std::string getDelta(CosemObject * o){
+		auto x = dynamic_cast<CosemObjectNumber<T>*>(o);
 		if(x){
 			char buf[20];
 			sprintf(buf, formatP, (value - x->getValue()));
@@ -206,7 +246,12 @@ class OBISObjectFloatingDecimal : public OBISObject{
 		}
 		return std::string("NaN");
 	}
-
+	
+	/**
+	 * Return a std::string with the formated number.
+	 *
+	 * \return std::string with number formated in a string
+	 */
 	std::string getValueString(){
 		char buf[20];
 		sprintf(buf, formatP, value);
@@ -214,11 +259,16 @@ class OBISObjectFloatingDecimal : public OBISObject{
 		return std::string(buf);
 	}
 
+	/**
+	 * Return the unit for the stored value in a string.
+	 *
+	 * \return std::string with the unit of the number
+	 */
 	std::string getUnitString(){
 		return std::string(unitText);
 	}
 
-	bool operator==(const OBISObject &o){
+	bool operator==(const CosemObject &o){
 		if(o.getType() == this->getType()){
 			return true;
 		}
@@ -229,10 +279,10 @@ class OBISObjectFloatingDecimal : public OBISObject{
 		char buf[20];
 		sprintf(buf, formatP, value);
 
-		return std::string(	getOBISTypeString(getType())
-		+ std::string(": ")
-		+ buf
-		+ unitText);
+		return std::string(	getObisTypeString(getType())
+							+ std::string(": ")
+							+ buf
+							+ unitText);
 	}
 
 	std::string printValue(){
@@ -242,41 +292,60 @@ class OBISObjectFloatingDecimal : public OBISObject{
 		return std::string(buf + getUnitString());
 	}
 
-	OBISObjectFloatingDecimal(OBISType t, T v, const char * f, const char * unit = ""){
+	/**
+	 * Create a Cosem object for numbers.
+	 *
+	 * Hold a number with the type specified by template.
+	 * When printing this object the format and unit will be used
+	 * to generate the string.
+	 *
+	 * \param type the ObisType of this object.
+	 * \param value template parameter, type for stored number.
+	 * \param format pointer to a const char array with the formatting string.
+	 * \param unit pointer to a const char array holding the unit of the number.
+	 */
+	CosemObjectNumber(ObisType type, T v, const char * format, const char * unit = ""){
 		unitText = unit;
-		myObisType = t;
+		myObisType = type;
 		value = v;
-		formatP = f;
+		formatP = format;
 	}
 
-	~OBISObjectFloatingDecimal(){
+	~CosemObjectNumber(){
 	}
+
+	private:
+	CosemObjectNumber( const CosemObjectNumber &c );
+	CosemObjectNumber& operator=( const CosemObjectNumber &c );
 };
 
-class OBISObjectString : public OBISObject{
+/**
+ * Implementation of CosemObject to hold a string.
+ */
+class CosemObjectString : public CosemObject{
 	private:
 	std::string s;
-	OBISType thisType;
+	ObisType thisType;
 
 	public:
 
-	OBISType getType() const{
+	ObisType getType() const{
 		return thisType;
 	}
 
-	bool operator==(const OBISObject &o){
+	bool operator==(const CosemObject &o){
 		if(o.getType() == this->getType()){
 			return true;
 		}
 		return false;
 	}
 
-	std::string getMagicDelta(OBISObject * o){
+	std::string getDelta(CosemObject * o){
 		return std::string("NaN");
 	}
 
 	std::string print(){
-		return std::string(	getOBISTypeString(getType())
+		return std::string(	getObisTypeString(getType())
 		+ std::string(": ")
 		+ s);
 	}
@@ -285,17 +354,26 @@ class OBISObjectString : public OBISObject{
 		return std::string(s); //Copy to keep temporary on stack
 		//Might work without copy
 	}
-
-	OBISObjectString(OBISType t, std::string inputS){
+	
+	/**
+	 * Generate a cosem object with a string.
+	 *
+	 * \param type the ObisType of this object.
+	 * \param inputS input string.
+	 */
+	CosemObjectString(ObisType type, std::string inputS){
 		s = inputS;
-		thisType = t;
+		thisType = type;
 	}
 
-	~OBISObjectString(){
+	~CosemObjectString(){
 	}
 };
 
-class OBISObjectTST : public OBISObject{
+/**
+ * Implementation of CosemObject to hold a timestamp.
+ */
+class CosemObjectTst : public CosemObject{
 	
 	private:
 	int year;
@@ -304,28 +382,27 @@ class OBISObjectTST : public OBISObject{
 	int hour;
 	int min;
 	int sec;
-	OBISType thisType;
+	ObisType thisType;
 
 	public:
 
-	OBISType getType() const{
+	ObisType getType() const{
 		return thisType;
 	}
 
-	bool operator==(const OBISObject &o){
-		////std::cout << "COMPARING OBISObject" << std::endl;
+	bool operator==(const CosemObject &o){
 		if(o.getType() == this->getType()){
 			return true;
 		}
 		return false;
 	}
 
-	std::string getMagicDelta(OBISObject * o){
+	std::string getDelta(CosemObject * o){
 		return std::string("NaN");
 	}
 
 	std::string print(){
-		return std::string(	getOBISTypeString(getType()) + std::string(": ")
+		return std::string(	getObisTypeString(getType()) + std::string(": ")
 		+ std::to_string(year)
 		+ std::string(":") + std::to_string(month)
 		+ std::string(":") + std::to_string(day)
@@ -343,42 +420,57 @@ class OBISObjectTST : public OBISObject{
 		+ std::string("s") + std::to_string(sec));
 	}
 
-	OBISObjectTST(OBISType t, int y, int MM, int d, int h, int m, int s){
+	/**
+	 * Generate a Cosem object holding a timestamp.
+	 *
+	 * \param type the ObisType of this object.
+	 * \param y year of timestamp.
+	 * \param MM month of timestamp.
+	 * \param d day of timestamp.
+	 * \param h hour of timestamp.
+	 * \param m minute of timestamp.
+	 * \param s second of timestamp.
+	 */
+	CosemObjectTst(ObisType type, int y, int MM, int d, int h, int m, int s){
 		year = y;
 		month = MM;
 		day = d;
 		hour = h;
 		min = m;
 		sec = s;
-		thisType = t;
+		thisType = type;
 	}
 
-	~OBISObjectTST(){
+	~CosemObjectTst(){
 	}
 };
 
-struct PowerFailureEventObj{
-	OBISObject * timestamp;
-	OBISObject * duration;
-};
-
-class OBISPowerFailureEventLog : public OBISObject{
+/**
+ * Implementation of CosemObject to hold a event log.
+ */
+class CosemEventLog : public CosemObject{
+	
 	private:
+	
+	struct PowerFailureEventObj{
+		CosemObject * timestamp;
+		CosemObject * duration;
+	};
+		
 	std::list<PowerFailureEventObj> log;
-	OBISType thisType;
+	ObisType thisType;
 
 	public:
 
-	OBISType getType() const{
+	ObisType getType() const{
 		return thisType;
 	}
 
-	std::string getMagicDelta(OBISObject * o){
+	std::string getDelta(CosemObject * o){
 		return std::string("NaN");
 	}
 
-	bool operator==(const OBISObject &o){
-		////std::cout << "COMPARING OBISObject" << std::endl;
+	bool operator==(const CosemObject &o){
 		if(o.getType() == this->getType()){
 			return true;
 		}
@@ -388,7 +480,7 @@ class OBISPowerFailureEventLog : public OBISObject{
 	std::string print(){
 		std::string combinedLogPrint;
 
-		combinedLogPrint.append(getOBISTypeString(getType()) + std::string(":"));
+		combinedLogPrint.append(getObisTypeString(getType()) + std::string(":"));
 
 		for(const auto &Optr: log){
 			combinedLogPrint.append("\r\n\t");
@@ -410,19 +502,27 @@ class OBISPowerFailureEventLog : public OBISObject{
 		}
 		return combinedLogPrint;
 	}
-
-	OBISPowerFailureEventLog(OBISType t){
-		thisType = t;
+	
+	/**
+		* Generate a Cosem object for the power failure event log.
+		*
+		* \param type the ObisType of this object.
+		*/
+	CosemEventLog(ObisType type){
+		thisType = type;
 	}
 
-	// void addOBISLog(OBISObjectTST * time, OBISObjectFloatingDecimal<int> * val){
-	// 	log.push_back(PowerFailureEventObj{time, val});
-	// }
-	void addOBISLog(OBISObject * time, OBISObject * val){
+	/**
+		* Add an event to the log.
+		*
+		* \param time timestamp of event.
+		* \param val duration of event.
+		*/
+	void addEventLog(CosemObject * time, CosemObject * val){
 		log.push_back(PowerFailureEventObj{time, val});
 	}
 
-	~OBISPowerFailureEventLog(){
+	~CosemEventLog(){
 		std::list<PowerFailureEventObj>::iterator it = log.begin();
 
 		while(it != log.end()){
@@ -433,42 +533,95 @@ class OBISPowerFailureEventLog : public OBISObject{
 	}
 };
 
-class OBISChannel{
+/**
+ * CosemChannel that holds multiple CosemObject.
+ *
+ * A COSEM message can contain multiple devices on the same bus.
+ * These are separated in a different channel and each hold CosemObjects.
+ */
+class CosemChannel{
 	private:
-	std::list<OBISObject*> nList;
-	unsigned int channelNumber;
+	
+	std::list<CosemObject*> nList;
+	unsigned int channel_number;
 
 	public:
-	OBISChannel(int channelN){
-		channelNumber = channelN;
+	
+	/**
+		* Construct a CosemChannel .
+		*
+		* \param channelN number for this channel.
+		*/
+	CosemChannel(unsigned int channelN){
+		channel_number = channelN;
 	}
 
-	~OBISChannel(){
-		std::list<OBISObject*>::iterator it = nList.begin();
+	/**
+		* Destructor for all stored channel info.
+		*
+		* Delete all objects stored in channel.
+		*/
+	~CosemChannel(){
+		std::list<CosemObject*>::iterator it = nList.begin();
 
 		while(it != nList.end()){
-			OBISObject * prevP = (*it);
+			CosemObject * prevP = (*it);
 			it = nList.erase(it);
 			delete prevP;
 		}
 	}
 	
+	/**
+		* Get channel number.
+		*
+		* \return unsigned int with the channel number.
+		*/
 	const unsigned int getChannelNumber() const{
-		return channelNumber;
+		return channel_number;
 	}
 
-	bool operator==(const OBISChannel &o){
+	const unsigned int getChannelSize(){
+		return nList.size();
+	}
+
+	std::string print(){
+		std::string s = "Channel # ";
+		s.append(std::to_string(channel_number));
+		return s;
+	}
+
+	/**
+		* Compare channel.
+		*
+		* Every channel should have a different number to differentiate.
+		* If two channels are compared and have the same channel number,
+		* they will act as if they are the same, regardless of object in
+		* the channel.
+		*
+		* \param o a const reference to CosemChannel.
+		* \return bool do the channels match
+		*/
+	bool operator==(const CosemChannel &o){
 		if(o.getChannelNumber() == this->getChannelNumber()){
 			return true;
 		}
 		return false;
 	}
-
-	std::list<OBISObject*> & getOBISObjectList(){
+	
+	// @TODO Should be hidden, replace with a search function, in channel number
+	/**
+		* \return std::list<CosemObject*> pointer to object list.
+		*/
+	std::list<CosemObject*> & getCosemObjectList(){
 		return nList;
 	}
 
-	void addOBISObject(OBISObject * o){
+	/**
+		* Add a CosemObject to this channel.
+		*
+		* \param o a pointer to CosemObject.
+		*/
+	void addCosemObject(CosemObject * o){
 		for(const auto &Optr: nList){
 			if (*Optr == *o){
 				nList.remove(Optr);
@@ -480,34 +633,100 @@ class OBISChannel{
 	}
 };
 
+/**
+ * Holds decoded P1 data and interract with this data
+ */
 class P1Decoder{
 	public:
 		P1Decoder();
-		~P1Decoder();
 
-		static int decodeP1(const char * msgStart, P1Decoder & p1C); //should be null terminated string
+		~P1Decoder();	
 
-		std::list<OBISChannel*> getAllOBISChannels();
+		unsigned int getCosemChannelCount();
 
-		OBISChannel * getOBISChannel(unsigned int n);
+		unsigned int getCosemChannelSize(unsigned int n);
 
-		void removeOBISChannel(OBISChannel * n);
+		std::string getCosemStringFromChannel(unsigned int channelNumber, ObisType type);
 
-		void clearAllOBISChannel();
+		std::string getDeltaString(	unsigned int channelNumber1, ObisType type1, 
+									unsigned int channelNumber2, ObisType type2);
+
+		/**
+		 * Remove the channel matching on n.
+		 *
+		 * \param n channel number to match.
+		 */
+		void removeCosemChannel(CosemChannel * n);
+
+		/**
+		 * Removes all channels stored.
+		 */
+		void clearAllCosemChannels();
 	
+		/**
+		 * Get device identifier string.
+		 *
+		 * \return std::string device identifier.
+		 */
 		std::string getDeviceIdentifier();
+		
+		/**
+		 * Set device identifier.
+		 *
+		 * \param id string with device identifier.
+		 */
 		void setDeviceIdentifier(std::string id);
 
+		/**
+		 * Decode a P1 telegram string.
+		 *
+		 * \param msgStart pointer to char array.
+		 */
+		int decodeP1String(const char * msgStart);
+
 	private:
+
+		/**
+		 * Static function to decode a P1 telegram.
+		 *
+		 * Decodes P1 telegram into Cosem objects.
+		 * The decoded message is stored in the referenced P1Decoder obejct.
+		 *
+		 * \param msgStart string holding the P1 telegram.
+		 * \param p1C reference to P1Decoder object where the decoded telegram is stored.
+		 */
+		static int decodeP1(const char * msgStart, P1Decoder & p1C); //should be null terminated string
 		
 		// [0] --- [1] --- [2] --- [n]
 		// P1 --- M-bus0 --- Mbus1 --- Mbus n
-		std::list<OBISChannel*> OBISChannelList;
+		std::list<CosemChannel*> CosemChannelList;
+
+		//@TODO should be abstracted away
+		/**
+		 * Returns pointer to channel list.
+		 *
+		 * \return std::list<CosemChannel*> pointer to channel list
+		 */
+		std::list<CosemChannel*> getAllCosemChannels();
+		
+		//@TODO should be abstracted away
+		/**
+		 * Returns pointer to a channel in the channel list.
+		 *
+		 * Match n to a channel if possible, if not found a new channel
+		 * get added to the list.
+		 *
+		 * \param n number of the channel in channel list
+		 * \return CosemChannel* pointer to channel
+		 */
+		CosemChannel * addCosemChannel(unsigned int n);
+
+		CosemChannel * getCosemChannel(unsigned int n);		
 
 		static int OBISCodeSectionToInt(const char * &startSec);
 		static int OBISStringToIntLenght(const char * &startSec, unsigned int n);
 		static int OBISMoveCursorNextLine(const char * &startSec);
-		static int OBISAddObjectToChannel(OBISChannel * oChannel, const char * &startSec, int sec1, int sec2, int sec3);
+		static int OBISAddObjectToChannel(CosemChannel * oChannel, const char * &startSec, int sec1, int sec2, int sec3);
 	
 		std::string deviceIdentifier = "";
 
