@@ -16,54 +16,54 @@
  * Implementation fo PinDriver spefically for Leds.
  */
 class Led : public PinDriver{
-	public:
+public:
 		
-		/**
-		 * enum to hold led types.
-		 */
-		enum class LEDTYPE{
-			DEFAULT = 0,		///< Drive high to turn on led.
-			INVERTED,			///< Drive low to turn on led.
-			OPENCOLLECTOR,		///< Sink current.
-			OPENCOLLECTOR_INV,	///< Sink current, led is inverted.
-		};
+	/**
+		* enum to hold led types.
+		*/
+	enum class LEDTYPE{
+		DEFAULT = 0,		///< Drive high to turn on led.
+		INVERTED,			///< Drive low to turn on led.
+		OPENCOLLECTOR,		///< Sink current.
+		OPENCOLLECTOR_INV,	///< Sink current, led is inverted.
+	};
 		
-		/**
-		 * Create a Led with a LED::LEDTYPE.
-		 *
-		 * \param portLed holds a Pio port.
-		 * \param pinLed pin number in Pio.
-		 * \param ledType holds LED::LEDTYPE , default is LED::LEDTYPE::DEFAULT
-		 * \see LED::LEDTYPE.
-		 */
-		Led(Pio * portLed, int pinLed, Led::LEDTYPE ledType = LEDTYPE::DEFAULT);
+	/**
+		* Create a Led with a LED::LEDTYPE.
+		*
+		* \param portLed holds a Pio port.
+		* \param pinLed pin number in Pio.
+		* \param ledType holds LED::LEDTYPE , default is LED::LEDTYPE::DEFAULT
+		* \see LED::LEDTYPE.
+		*/
+	Led(Pio * portLed, int pinLed, Led::LEDTYPE ledType = LEDTYPE::DEFAULT);
 		
-		/**
-		 * Default destructor.
-		 */
-		~Led();
+	/**
+		* Default destructor.
+		*/
+	~Led();
 		
-		/**
-		 * Turn the led on.
-		 */
-		void On();
+	/**
+		* Turn the led on.
+		*/
+	void on();
 		
-		/**
-		 * Turn the led off.
-		 */
-		void Off();
+	/**
+		* Turn the led off.
+		*/
+	void off();
 		
-		/**
-		 * Toggle current LED state.
-		 */
-		void Toggle();
+	/**
+		* toggle current LED state.
+		*/
+	void toggle();
 		
 		
-	private:
-		bool inverted;
+private:
+	bool inverted;
 				
-		Led( const Led &c );
-		Led& operator=( const Led &c );
+	Led( const Led &c );
+	Led& operator=( const Led &c );
 
 }; //LED
 

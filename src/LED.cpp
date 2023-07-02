@@ -22,8 +22,7 @@ Led::Led(Pio * portLed, int pinLed, LEDTYPE ledType):
 			case LEDTYPE::OPENCOLLECTOR_INV:
 				port->PIO_MDER |= (1 << pin);
 				inverted = true;
-			default:
-				
+			default:	
 				port->PIO_PER |= (1 << pin); //Set GPIO use
 				port->PIO_OER |= (1 << pin); //Output Enable
 				port->PIO_CODR |= (1 << pin); //Write LOW
@@ -32,7 +31,7 @@ Led::Led(Pio * portLed, int pinLed, LEDTYPE ledType):
 	
 }
 
-void Led::On(){
+void Led::on(){
 	if(inverted){
 		port->PIO_CODR |= (1 << pin);
 		return;
@@ -40,7 +39,7 @@ void Led::On(){
 	port->PIO_SODR |= (1 << pin);
 }
 
-void Led::Off(){	
+void Led::off(){	
 	if(inverted){
 		port->PIO_SODR |= (1 << pin);
 		return;
@@ -49,7 +48,7 @@ void Led::Off(){
 	
 }
 
-void Led::Toggle(){
+void Led::toggle(){
 	//Read current state.
 	uint32_t pinStatus = (port->PIO_PDSR & (1 << pin));
 	if(pinStatus){

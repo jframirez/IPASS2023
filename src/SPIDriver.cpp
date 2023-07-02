@@ -6,7 +6,7 @@
 */
 
 
-#include "../include/SpiDriver.h"
+#include "SpiDriver.h"
 #include "sam3xa.h"
 
 // default constructor

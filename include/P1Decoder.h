@@ -22,7 +22,7 @@
 #include <typeinfo>
 
 enum class ObisType{
-	Version,
+	Version = 0,
 	Power,
 	Timestamp,
 	Equipment_identifier,
@@ -648,8 +648,7 @@ class P1Decoder{
 
 		std::string getCosemStringFromChannel(unsigned int channelNumber, ObisType type);
 
-		std::string getDeltaString(	unsigned int channelNumber1, ObisType type1, 
-									unsigned int channelNumber2, ObisType type2);
+		std::string getDeltaString(	unsigned int channelNumber, ObisType type1, ObisType type2);
 
 		/**
 		 * Remove the channel matching on n.

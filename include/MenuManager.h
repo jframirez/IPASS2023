@@ -29,7 +29,6 @@ enum class MenuName{
   * Manages the menu currently displayed on a ILI9341Driver.
   */
 class MenuManager{
-//functions
 public:
 
 	/**
@@ -46,8 +45,9 @@ public:
 	 *
 	 * \param name pointer to a const menu.
 	 * \param backfill background color of current menu.
+	 * \param force a re-draw of the menu in empty state.
 	 */
-	void SetMenu(const menu * name, ILI_COLORS backfill);
+	void setMenu(const menu * name, ILI_COLORS backfill, bool draw = false);
 	
 	//int SetImage(const image * img, int xStart, int yStart){
 	// per line
@@ -67,9 +67,9 @@ public:
 	 * \param n number of textLabel in menu
 	 * \param curFont use font to write text
 	 * \param sBuf holds the string to write to the label
-	 * \param contWrite continue writing after last WriteTextLabel
+	 * \param contWrite continue writing after last writeTextLabel
 	 */
-	void WriteTextLabel(uint n, font curFont, std::string sBuf, bool contWrite = false);
+	void writeTextLabel(uint n, font curFont, std::string sBuf, bool contWrite = false);
 	
 	/**
 	 * Clear a label filling it with a ILI_COLORS.
@@ -79,10 +79,10 @@ public:
 	 * \param n number of textLabel in menu.
 	 * \param clearColor a ILI_COLORS to clear textLabel with.
 	 */
-	void ClearTextLabel(uint n, ILI_COLORS clearColor = ILI_COLORS::BLACK);
+	void clearTextLabel(uint n, ILI_COLORS clearColor = ILI_COLORS::BLACK);
 	
 	~MenuManager();
-protected:
+
 private:
 
 	ILI9341Driver & myLCD;
