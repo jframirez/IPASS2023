@@ -80,7 +80,7 @@ Interrupt piodCalls;
 void PIOD_Handler(){
 	uint32_t isrVal = PIOD->PIO_ISR;
 	
-	piodCalls.updateInterrupt(PIOB_IRQn, isrVal);
+	piodCalls.updateInterrupt(PIOD_IRQn, isrVal);
 	
 	value_ISR_PIOD = isrVal;
 }
@@ -90,12 +90,13 @@ Interrupt piobCalls;
 void PIOB_Handler(){
 	uint32_t isrVal = PIOB->PIO_ISR;
 	
-	piobCalls.updateInterrupt(PIOD_IRQn, isrVal);
+	piobCalls.updateInterrupt(PIOB_IRQn, isrVal);
 	
 	value_ISR_PIOB = isrVal;
 }
 
 enum class SelfTestErrorCode{
+	P1SelfTestPassed = 0,
 	P1DecodeError = -1,
 	P1ObjectListError = -2,
 	P1CosemObjectError = -2,
@@ -134,81 +135,31 @@ int main(void)
 						PMC_PCER1_PID34 | //Timer Counter Channel 7
 						PMC_PCER1_PID35 );//Timer Counter Channel 8
 						
-	/* TC2 -> Channel 2 : used for Helper::Time functions */
-	TC2->TC_CHANNEL[2].TC_CMR =	TC_CMR_TCCLKS_TIMER_CLOCK4 | //~1.5uSec per tick
-								TC_CMR_WAVE |
-								TC_CMR_WAVSEL_UP ;
-		
-	TC2->TC_CHANNEL[2].TC_CCR |= TC_CCR_CLKEN; //Enable TC2
-	TC2->TC_CHANNEL[2].TC_CCR |= TC_CCR_SWTRG;
-	//TC2->TC_BCR |= TC_BCR_SYNC;
+	
+	Helper::Time::init();
 	
 	/* Setup leds */
-	//Led debugLED1(PIOB, 27);
-	//Led debugLED2(PIOA, 21, Led::LEDTYPE::INVERTED);
-	//Led debugLED3(PIOC, 30, Led::LEDTYPE::INVERTED);
-	
 	Led powerLed(PIOD, 9, Led::LEDTYPE::OPENCOLLECTOR);
 	Led heartbeatLed(PIOD, 10, Led::LEDTYPE::OPENCOLLECTOR);
 	Led p1UartReceiveLed(PIOC, 2, Led::LEDTYPE::OPENCOLLECTOR);
 	Led debugLED7(PIOC, 4, Led::LEDTYPE::OPENCOLLECTOR);
 	
-	//debugLED1.off();
-	//debugLED2.off();
-	//debugLED3.off();	
-	
-	/* UART Debug port setup */
-	
-	PinDriver uartRX(PIOA, 8);
-	PinDriver uartTX(PIOA, 9);
-	
-	uartRX.controllerPioDisable();
-	uartTX.controllerPioDisable();
-	
-	uartRX.peripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_A);
-	uartTX.peripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_A);
-	
-	UART->UART_BRGR = UART_BRGR_CD(46); //Baud rate ~115200
-	UART->UART_CR |= (UART_CR_TXEN);
-	
-	//wait for UART ready
-	while(!(UART->UART_SR & UART_SR_TXRDY)){}
+	Helper::Debug::init();
 	
 	/* Rotary encoder setup */
-	PinDriver rotaryRight(PIOD, 7); //Arduino due pin 11
-	PinDriver rotaryLeft(PIOD, 8); //Arduino due pin 12
-	Button rotaryButton(PIOB, 27); //Arduino due pin 13
-	
-	rotaryLeft.controllerPioEnable();
-	rotaryRight.controllerPioEnable();
+	Button rotaryButton(PIOB, 27); 
+
 	rotaryButton.controllerPioEnable();
-	
-	rotaryLeft.setInputFilter(PIO_INPUT_FILTER::GLITCH);
-	rotaryRight.setInputFilter(PIO_INPUT_FILTER::GLITCH);
 	rotaryButton.setInputFilter(PIO_INPUT_FILTER::GLITCH);
-	
-	rotaryLeft.interruptEnable();
-	rotaryRight.interruptEnable();
 	rotaryButton.interruptEnable();
-	
-	rotaryLeft.enablePullUp();
-	rotaryRight.enablePullUp();
-	
-	rotaryLeft.disableAdditionalInterruptMode(); //Default triggers on both edges
-	rotaryRight.disableAdditionalInterruptMode(); //Default triggers on both edges
-	
-	//rotaryLeft.enableAdditionalInterruptMode(PIO_LEVEL_SELECT::LOW_LEVEL);
-	//rotaryRight.enableAdditionalInterruptMode(PIO_LEVEL_SELECT::LOW_LEVEL);
 	rotaryButton.enableAdditionalInterruptMode(PIO_LEVEL_SELECT::RISING_EDGE);
 	
-	piodCalls.registerInterrupt(&rotaryRight);
-	piodCalls.registerInterrupt(&rotaryLeft);
 	piobCalls.registerInterrupt(&rotaryButton);
 	
-	RotaryEncoder testEncoder(	PinDriver(PIOD, 8), PIOD_IRQn,
-								PinDriver(PIOD, 7), PIOD_IRQn);
+	RotaryEncoder menuEncoder(	PinDriver(PIOD, 8), PIOD_IRQn, //Arduino due pin 11
+								PinDriver(PIOD, 7), PIOD_IRQn);//Arduino due pin 13
 	
-	piodCalls.registerInterrupt(&testEncoder);
+	piodCalls.registerInterrupt(&menuEncoder);
 
 	NVIC_EnableIRQ(PIOD_IRQn);
 	NVIC_SetPriority(PIOD_IRQn, 2);
@@ -241,10 +192,6 @@ int main(void)
 	SPI0_MISO.peripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_A);
 	SPI0_MOSI.peripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_A);
 	SPI0_SPCK.peripheralABSelect(PIO_ABSR_SELECT::PIO_ABSR_A);
-
-	
-
-	
 		
 	/* USART3 -> Receive P1 telegram */
 
@@ -264,27 +211,28 @@ int main(void)
 	
 	
 	/* Application setup */
-	//debugLED1.on();
 	
 	//SPI0
 	SpiDriver lcdSpi(SPI0, false, false);
 	
-	//lcd
-	ILI9341Driver lcd(320, 240, DisplayCS, DisplayDC, DisplayRESET, lcdSpi);
+	//p1Lcd
+	ILI9341Driver p1Lcd(320, 240, DisplayCS, DisplayDC, DisplayRESET, lcdSpi);
 
 	/* Self test */	
 	if(rotaryButton.getState() == PIO_PIN_STATE::HIGH){
 		//should return selftest erro code enum
-		SelfTestErrorCode result = SelfTest(lcd, lcdSpi, USART3);
+		SelfTestErrorCode result = SelfTest(p1Lcd, lcdSpi, USART3);
 		
-		if(static_cast<int>(result) < 0){
+		if(result != SelfTestErrorCode::P1SelfTestPassed){
 			Helper::Debug::DebugPrint(	"Self test detected an error: " 
 										+ std::to_string(static_cast<int>(result)));
+		}else{
+			Helper::Debug::DebugPrint("\r\n - Self test passed - \r\n");
 		}
 	}
 	
 	//Led Flasher blocking
-	for(int i = 0; i < 20; ++i){
+	for(int i = 0; i < 5; ++i){
 		powerLed.toggle();
 		heartbeatLed.toggle();
 		p1UartReceiveLed.toggle();
@@ -298,7 +246,7 @@ int main(void)
 	debugLED7.off();
 	
 	//Menu
- 	MenuManager p1_screen(lcd);
+ 	MenuManager p1_screen(p1Lcd);
  	
  	p1_screen.setMenu(&menuPageSplash, ILI_COLORS::BLACK);
  	p1_screen.writeTextLabel(0, font_ubuntumono_10, "TEST PRINT", false);
@@ -308,8 +256,6 @@ int main(void)
 	//Enable all interrupts that have been set in the NVIC.
 	__enable_irq();
 	
-	//Add UART receive as IRQ on prio 0
-	
 	p1_screen.setMenu(&menuPageMain, ILI_COLORS::BLACK);
 	
 	std::string receive_buffer;
@@ -317,11 +263,7 @@ int main(void)
 	USART3->US_CR |= US_CR_STTTO;
 	
 	unsigned int startTime = TC2->TC_CHANNEL[2].TC_CV;
-	
-	
-
 	unsigned int blockTime = TC2->TC_CHANNEL[2].TC_CV;
-	
 	static unsigned int button_block_time = TC2->TC_CHANNEL[2].TC_CV;
 	static bool block_button = false;
 
@@ -337,18 +279,17 @@ int main(void)
 	static bool goLeft = false;
 	static bool goRight = false;
 	static bool goButton = false;
-	static int goButtonHold = 0;
 	static int parseList = 0;
 
 
-	testEncoder.reset();
+	menuEncoder.reset();
 	rotaryButton.resetButton();
 	//rotaryLeft.resetButton();
 	//rotaryRight.resetButton();
 	
-	testEncoder.reset();
+	menuEncoder.reset();
 	
-	static bool drawMenu = true;
+	static bool draw_menu = true;
 	
 	static bool show_delta = false;
 	
@@ -371,14 +312,15 @@ int main(void)
 	
     while (1){
 		
+		/* Set app state and reset all state variables */
 		auto setAppState = [](int n)	{
 			app_state = n;
 			goLeft = false;
 			goRight = false;
 			goButton = false;
-			goButtonHold = 0;
+			
 			//reset state for this menu
-			drawMenu = true;
+			draw_menu = true;
 		};
 		
 		auto resetButtonBlock = [](){
@@ -388,8 +330,8 @@ int main(void)
 		};
 		
 		if(TC2->TC_CHANNEL[2].TC_CV - blockTime >= (350 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND)){
-			if(testEncoder.getRotation()){
-				int val = testEncoder.getRotation();
+			if(menuEncoder.getRotation()){
+				int val = menuEncoder.getRotation();
 				if(val < 0){
 					//Left
 					goLeft = true;
@@ -398,16 +340,8 @@ int main(void)
 					goRight = true;
 				}
 				
-				testEncoder.reset();
-			}
-			
-			if(rotaryButton.getStateBool()){
-				goButtonHold += 1;
-			}else{
-				goButtonHold = 0;
-			}
-			
-			
+				menuEncoder.reset();
+			}			
 			blockTime = TC2->TC_CHANNEL[2].TC_CV;
 		}
 		
@@ -448,18 +382,15 @@ int main(void)
 			//p1UartReceiveLed.Off();
 			
 			if(app_state == MAIN_MENU){
-			//if(1){
 				
-				//p1_screen.setMenu(&menuPageMain, ILI_COLORS::BLACK);
-				
-				Helper::Debug::DebugPrint(receive_buffer);
+				//Helper::Debug::DebugPrint(receive_buffer);
 				
 				P1Decoder p1msg;
 				int p1_decode_value = p1msg.decodeP1String(receive_buffer.c_str());
 				
-				if(drawMenu){
+				if(draw_menu){
 					p1_screen.setMenu(&menuPageMain, ILI_COLORS::BLACK, true);
-					drawMenu = false;
+					draw_menu = false;
 				}
 				
 				if(p1_decode_value == 0){
@@ -508,13 +439,6 @@ int main(void)
 
 		if(app_state == MAIN_MENU){
 			
- 			
- 			
- 			
- 			//p1_screen.writeTextLabel(1, font_ubuntumono_16, "MENU", false, mm_selected);
-
- 			//p1_screen.writeTextLabel(3, font_ubuntumono_16, "D-MENU", false, !mm_selected);
-			
 			if(goLeft){
 				goLeft = false;
 				
@@ -529,7 +453,6 @@ int main(void)
 			
 			if(goButton){
 				resetButtonBlock();
-				//goButton = false;
 				
 				if(mm_selected){
 					setAppState(DISP_MENU);
@@ -558,9 +481,9 @@ int main(void)
 				return false;
 			};
 						
-			if(drawMenu){
+			if(draw_menu){
 				p1_screen.setMenu(&menuPageMain, ILI_COLORS::BLACK, true);
-				drawMenu = false;
+				draw_menu = false;
 				
 				parseList = 0;
 				submenu_ = false;
@@ -661,7 +584,6 @@ int main(void)
 			
 			if(goButton){
 				resetButtonBlock();
-				//goButton = false;
 				
 				if(selected_menu == 0){
 					submenu_ = !submenu_;
@@ -677,7 +599,7 @@ int main(void)
 				}
 				
 				if(selected_menu == 2){
-					Helper::Debug::DebugPrint("ADD OR REMOVE OBISString\r\n");
+					//Helper::Debug::DebugPrint("ADD OR REMOVE OBISString\r\n");
 					//Remove obis object
 					std::vector<displayObject>::iterator it = display_list.begin();
 					
@@ -697,11 +619,6 @@ int main(void)
 					}
 
 				}
-			}
-			
-			if(goButtonHold == 3 && selected_menu == 3){
-				setAppState(MAIN_MENU);
-				channel_ = 0;
 			}
 		}//END DISP_MENU
 	
@@ -726,12 +643,10 @@ int main(void)
  				return false;
  			};
  			
- 			if(drawMenu){
+ 			if(draw_menu){
  				p1_screen.setMenu(&menuPageMain, ILI_COLORS::BLACK, true);
- 				drawMenu = false;
+ 				draw_menu = false;
  			}
- 			
- 			//p1_screen.writeTextLabel(SHOW_DELTA, font_ubuntumono_16, "DELTA MENU", false);
  			
  			std::string d;
  			if(show_delta){
@@ -821,7 +736,6 @@ int main(void)
  			
  			if(goButton){
  				resetButtonBlock();
- 				//goButton = false;
 								
 				switch(in_state){
 					case SHOW_DELTA:
@@ -842,9 +756,8 @@ int main(void)
 				}
  				
  			}
- 			
  		}//END DELTA_MENU
-		 
+
 	}
 }
 
@@ -857,7 +770,6 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 	MenuManager p1Screen(LCD);
 	
 	//Test pattern display
-	//LCD.SetRotation(ILI_ROTATION_MODE::LANDSCAPE, false, false);
 	LCD.sendTestPatternColorBlocks();
 	
 	//Menu
@@ -875,7 +787,7 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 	testMenu.setMenu(&menuPageSelfTest, ILI_COLORS::BLACK);
 	
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "TEST PRINT", true);
+	testMenu.writeTextLabel(0, font_ubuntumono_10, "TEST PRINT", false);
 	testMenu.writeTextLabel(0, font_ubuntumono_10, "!!!!!!!!!!", true);
 	testMenu.writeTextLabel(0, font_ubuntumono_10, "@@@@@@@@@@", true);
 	testMenu.writeTextLabel(0, font_ubuntumono_10, "##########", true);
@@ -916,11 +828,11 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 	if (P1DecodeValue != 0){
 		return SelfTestErrorCode::P1DecodeError;
 	}
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 1/X-"), true);
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 1/5-"), true);
 
 	testMenu.writeTextLabel(0, font_ubuntumono_10, ("ID : " + p1test.getDeviceIdentifier() + "expected \\2M550E-1012"), true);
 	if(p1test.getDeviceIdentifier() == "\\2M550E-1012"){	
-		testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 2/X-"), true);
+		testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 2/5-"), true);
 	}
 	
 	/* Test for channel count */
@@ -932,7 +844,7 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 	}
 	
 	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 3/X-"), true);
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 3/5-"), true);
 	
 	//PART TWO
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
@@ -945,13 +857,13 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 		return SelfTestErrorCode::P1ObjectListError;
 	}
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 4/X-"), true);
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 4/5-"), true);
 	
 	if(p1test.getCosemChannelSize(1) != 3){
 		return SelfTestErrorCode::P1ObjectListError;
 	}
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 5/X-"), true);
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 5/5-"), true);
 	
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
@@ -973,7 +885,7 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 	if(deltaP2String != "Power received (-P): 0.128kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 1/X-"), true);
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 1/3-"), true);
 	
 	/* Test CosemObject: 2
 	 * Verify delta calculation of two objects works.
@@ -985,12 +897,19 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 	if(deltaString != "0.240kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 2/X-"), true);
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 2/3-"), true);
 	
 	/* Test CosemObject: 3
 	 * Verify delta of two objects that can't be calculated
 	 */
+	auto deltaNotString = p1test.getDeltaString(0, ObisType::Version, ObisType::PReceived);
+	if(deltaString != "NaN"){
+		return SelfTestErrorCode::P1CosemObjectError;
+	}
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 3/3-"), true);
 	
 	
-	return SelfTestErrorCode::P1DecodeError;
+	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Self Test passed."), true);
+	
+	return SelfTestErrorCode::P1SelfTestPassed;
 }

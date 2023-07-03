@@ -6,31 +6,22 @@
 
 /** \file ILI9341Driver.h
  * ILI Driver definitions.
- * 
  */
 
 
 #ifndef __ILI9341DRIVER_H__
 #define __ILI9341DRIVER_H__
 
-#include "ILI9341Commands.h"
-
-#include "Helper.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 
+#include "ILI9341Commands.h"
+#include "Helper.h"
 #include "PinDriver.h"
 #include "SpiDriver.h"
 
 //Always in 4-wire 8-bit data serial interface
-//Define memory definitions
-//typedef enum ILI9341Commands{
-	
-//	};
-
-//#define SPI_CSR_SCBR(value) ((SPI_CSR_SCBR_Msk & ((value) << SPI_CSR_SCBR_Pos)))
 
 /**
  * enum to hold sleep mode.

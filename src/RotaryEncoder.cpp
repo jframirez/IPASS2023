@@ -15,7 +15,21 @@ RotaryEncoder::RotaryEncoder(	PinDriver a, IRQn a_i,
 								rotary_b(b),
 								a_interrupt(a_i),
 								b_interrupt(b_i){
-									
+			
+	rotary_a.controllerPioEnable();
+	rotary_b.controllerPioEnable();
+	
+	rotary_a.setInputFilter(PIO_INPUT_FILTER::GLITCH);
+	rotary_b.setInputFilter(PIO_INPUT_FILTER::GLITCH);
+	
+	rotary_a.interruptEnable();
+	rotary_b.interruptEnable();
+	
+	rotary_a.enablePullUp();
+	rotary_b.enablePullUp();
+	
+	rotary_a.disableAdditionalInterruptMode(); //Default triggers on both edges
+	rotary_b.disableAdditionalInterruptMode(); //Default triggers on both edges
 	
 	bool a_state = rotary_a.getStateBool();
 	bool b_state = rotary_b.getStateBool();
@@ -33,8 +47,13 @@ RotaryEncoder::RotaryEncoder(	PinDriver a, IRQn a_i,
 	last_state = 0;
 }
 
-void RotaryEncoder::callReference(IRQn interruptNumber, uint32_t flag){
-
+void RotaryEncoder::callReference(IRQn interrupt_number, uint32_t flag_){
+	
+	if((a_interrupt != interrupt_number) || (b_interrupt != interrupt_number)){
+		//Interrupt is not for this object
+		return;
+	}
+	
 	bool a = rotary_a.getStateBool();
 	bool b = rotary_b.getStateBool();
 	
@@ -47,12 +66,7 @@ void RotaryEncoder::callReference(IRQn interruptNumber, uint32_t flag){
 	if(b){
 		current_state |= (1 << 1);
 	}
-	
-	
-	//Transistion from
-	//10231 =  Left
-	
-	//20132 =  Right
+
 	int ts = (current_state << 2) | (last_state); // total state
 	
 	if(ts == 7 || ts == 1 || ts == 8 || ts == 14){
@@ -67,18 +81,6 @@ void RotaryEncoder::callReference(IRQn interruptNumber, uint32_t flag){
 	
 		
 	last_state = current_state;
-	
-// 	STATE current_state = NONE;
-// 	
-// 	if(a && b){
-// 		current_state = AandB;
-// 	}else if(a && !b){
-// 		current_state = AnotB;
-// 	}else if (!a && b){
-// 		current_state = BnotA;
-// 	}else{
-// 		current_state = NONE;
-// 	}
 	
 };
 

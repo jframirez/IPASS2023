@@ -46,10 +46,7 @@ class SpiDriver{
 		inline void SpiSend(uint8_t byte){
 			SPIreg->SPI_TDR = (0xFF & byte);
 			while(!(SPIreg->SPI_SR & SPI_SR_TXEMPTY)){};
-		}
-	
-		//void SPIReceive();
-				
+		}	
 				
 		~SpiDriver();
 
