@@ -10,6 +10,7 @@
 #define __PINDRIVER_H__
 
 #include "sam.h"
+#include "Interruptible.h"
 
 
 enum class PIO_ABSR_SELECT{
@@ -46,12 +47,20 @@ enum class PIO_LEVEL_SELECT{
  * on the pin that fall under Parallel Input/Output Controller (PIO)
  *
  */
-class PinDriver{
+class PinDriver: public Interruptible{
 protected:
 	Pio * port; /**< port where pin is located */
 	int pin; /**< pin number */
 
 public:
+
+	/**
+	 * If pin is registered in a interrupt this function gets called
+	 *
+	 * \param interrupt_number called from IRQn.
+	 * \param flag_ interupt flag
+	 */
+	void callReference(IRQn interrupt_number, uint32_t flag_){};
 	
 	/**
 	* Setup a single pin.
@@ -114,6 +123,11 @@ public:
 		}
 	}
 	
+	/**
+	* Set pin to output and set the output value
+	*
+	* \param val set pin to bool
+	*/
 	inline void setOutput(bool val){
 		port->PIO_PER |= (1 << pin); //Set GPIO use
 		port->PIO_OER |= (1 << pin); //Output Enable
@@ -139,6 +153,11 @@ public:
 		return PIO_PIN_STATE::LOW;
 	}
 	
+	/**
+	* Get current value of pin.
+	*
+	* \return bool value of pin
+	*/
 	inline bool getStateBool(){
 		uint32_t pinStatus = (port->PIO_PDSR & (1 << pin));
 		if(pinStatus){
@@ -224,10 +243,20 @@ public:
 		port->PIO_PUDR |= (1 << pin);
 	}
 	
+	/**
+	 * Get used pin.
+	 *
+	 *\return int number of pin used.
+	 */
 	int getPinNumber(){
 		return pin;
 	}
 	
+	/**
+	 * Get used port.
+	 *
+	 *\return Pio pointer to port used.
+	 */
 	inline Pio * getPort(){
 		return port;
 	}

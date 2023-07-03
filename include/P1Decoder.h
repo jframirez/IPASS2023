@@ -21,6 +21,8 @@
 
 #include <typeinfo>
 
+#include "CosemObject.h"
+
 enum class ObisType{
 	Version = 0,
 	Power,
@@ -60,11 +62,30 @@ enum class ObisType{
 	PowerFailureEventLogTime,
 	GasDeliveredLog,
 	GasDelivered,
+	COUNT,
 
 };
 
-static const char * getObisTypeString(ObisType t){
-	switch (t){
+static const ObisType getNextType(ObisType t_){
+	int t_val = static_cast<int>(t_);
+	
+	if(t_val < (static_cast<int>(ObisType::COUNT) - 1) ){
+		return static_cast<ObisType>(t_val + 1);
+	}
+	return static_cast<ObisType>(0);
+}
+
+static const ObisType getPrevType(ObisType t_){
+	int t_val = static_cast<int>(t_);
+	
+	if(t_val > 0 ){
+		return static_cast<ObisType>(t_val - 1);
+	}
+	return static_cast<ObisType>(getPrevType(ObisType::COUNT));
+}
+
+static const char * getObisTypeString(ObisType t_){
+	switch (t_){
 		case ObisType::Version:
 			return "Version information";
 		case ObisType::Power:
@@ -136,13 +157,13 @@ static const char * getObisTypeString(ObisType t){
 		case ObisType::PowerFailureEventLog:
 			return "Power failure event log";
 		case ObisType::PowerFailureEventLogTime:
-			return "Event lenght";
+			return "Event length";
 		case ObisType::GasDeliveredLog:
 			return "Last 5-minute value gas delivered";
 		case ObisType::GasDelivered:
 			return "Gas delivered";
 		default:
-			return "NO VALUE IN OBISTypeString";
+			return "NO VALUE FOR OBISType";
 			break;
 	}
 }
@@ -300,7 +321,7 @@ class CosemObjectNumber : public CosemObject{
 	 * to generate the string.
 	 *
 	 * \param type the ObisType of this object.
-	 * \param value template parameter, type for stored number.
+	 * \param v template parameter, type for stored number.
 	 * \param format pointer to a const char array with the formatting string.
 	 * \param unit pointer to a const char array holding the unit of the number.
 	 */
@@ -572,18 +593,28 @@ class CosemChannel{
 	}
 	
 	/**
-		* Get channel number.
-		*
-		* \return unsigned int with the channel number.
-		*/
+	* Get channel number.
+	*
+	* \return unsigned int with the channel number.
+	*/
 	const unsigned int getChannelNumber() const{
 		return channel_number;
 	}
 
+	/**
+	* Get channel size.
+	*
+	* \return unsigned int with the channel size.
+	*/
 	const unsigned int getChannelSize(){
 		return nList.size();
 	}
 
+	/**
+	* Print channel number.
+	*
+	* \return string with the channel number.
+	*/
 	std::string print(){
 		std::string s = "Channel # ";
 		s.append(std::to_string(channel_number));
@@ -634,7 +665,7 @@ class CosemChannel{
 };
 
 /**
- * Holds decoded P1 data and interract with this data
+ * Holds decoded P1 data and interact with this data
  */
 class P1Decoder{
 	public:
@@ -642,13 +673,46 @@ class P1Decoder{
 
 		~P1Decoder();	
 
+		/**
+		 * Get the number of channels in decoded message.
+		 *
+		 * \return unsigned int number of channels
+		 */
 		unsigned int getCosemChannelCount();
-
+		
+		/**
+		 * Get the number of objects in a channel.
+		 *
+		 * \param n channel number.
+		 * \return unsigned int channel size.
+		 */
 		unsigned int getCosemChannelSize(unsigned int n);
 
-		std::string getCosemStringFromChannel(unsigned int channelNumber, ObisType type);
-
-		std::string getDeltaString(	unsigned int channelNumber, ObisType type1, ObisType type2);
+		/**
+		 * Get string of stored Cosem object in channel.
+		 *
+		 * If the object does not exist in the channel return
+		 * "NaN"
+		 *
+		 * \param n channel number.
+		 * \param type obis type to get string for
+		 * \return string holding string for ObisType in channel
+		 */
+		std::string getCosemStringFromChannel(unsigned int n, ObisType type);
+		
+		/**
+		 * Get the delta between two objects.
+		 *
+		 * If the objects exist and are of the same type and numeric the delta will be calculated and
+		 * returned as a string with unit. If the object can not be found in the channel
+		 * or the delta value can not be calculated return will be "NaN"
+		 *
+		 * \param n channel number.
+		 * \param type1 ObisType of first item.
+		 * \param type2 ObisType of second item.
+		 * \return string holding delta.
+		 */
+		std::string getDeltaString(	unsigned int n, ObisType type1, ObisType type2);
 
 		/**
 		 * Remove the channel matching on n.

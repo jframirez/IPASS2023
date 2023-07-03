@@ -54,7 +54,7 @@ std::string P1Decoder::getCosemStringFromChannel(unsigned int channelNumber, Obi
 	return std::string("NaN");
 }
 
-std::string P1Decoder::getDeltaString(	unsigned int channelNumber, ObisType type1, ObisType type2){
+std::string P1Decoder::getDeltaString(unsigned int channelNumber, ObisType type1, ObisType type2){
 	CosemObject * deltaP1 = nullptr;
 	CosemObject * deltaP2 = nullptr;
 
@@ -75,11 +75,9 @@ std::string P1Decoder::getDeltaString(	unsigned int channelNumber, ObisType type
 		}
 	}
 	
-	return std::string();
+	return std::string("NaN");
 	
 }
-
-
 
 unsigned int P1Decoder::getCosemChannelSize(unsigned int n){
 	auto cN = getCosemChannel(n);

@@ -10,43 +10,73 @@
 #define __ROTARYENCODER_H__
 
 #include "PinDriver.h"
-#include "InterruptRef.h"
+#include "Interruptible.h"
 
-enum class ROTATION{
-	NONE = 0,
-	LEFT = 1,
-	RIGHT = 2
-};
-
-class RotaryEncoder: public InterruptRef{
+/**
+ * Make a rotary encoder.
+ */
+class RotaryEncoder: public Interruptible{
 private:
-	PinDriver rotaryA;
-	PinDriver rotaryB;
-	IRQn aInterrupt;
-	IRQn bInterrupt;
+	PinDriver rotary_a;
+	PinDriver rotary_b;
+	IRQn a_interrupt;
+	IRQn b_interrupt;
 	
 	int last_state = 0;
 	
-	int rotation = 0;
+	int rotation_ = 0;
 
 //functions
 public:
-	RotaryEncoder(	PinDriver a, IRQn aI,
-					PinDriver b, IRQn bI);
+
+	/**
+	 * Make a rotary encoder.
+	 *
+	 * \param a PinDriver for a signal.
+	 * \param a_i a-signal receives interrupt from IRQn
+	 * \param b PinDriver for b signal.
+	 * \param b_i b-signal receives interrupt from IRQn
+	 */
+	RotaryEncoder(	PinDriver a, IRQn a_i,
+					PinDriver b, IRQn b_i);
 	
-	void callReference(IRQn interruptNumber, uint32_t flag) override;
+	/**
+	 * If rotary encoder is registered in a interrupt this function gets called
+	 *
+	 * \param interrupt_number called from IRQn.
+	 * \param flag_ interupt flag
+	 */
+	void callReference(IRQn interrupt_number, uint32_t flag_) override;
 	
+	/**
+	 * Get current rotation value.
+	 *
+	 * Rotation increments on a-signal and decrements on b-signal.
+	 *	
+	 * \return int rotation value
+	 */
 	int getRotation();
 	
-	int getState();
+	/**
+	 * Get previous state.
+	 *
+	 * State is an encoded value. This is the last state of
+	 * pin a and b when called from interrupt.
+	 *	
+	 * \return int encoded last_state
+	 */
+	int getLastState();
 	
+	/**
+	 * Reset counted rotations.
+	 */
 	void reset();
 	
 	~RotaryEncoder();
 
 private:
-	RotaryEncoder( const RotaryEncoder &c );
-	RotaryEncoder& operator=( const RotaryEncoder &c );
+	RotaryEncoder( const RotaryEncoder &c_ );
+	RotaryEncoder& operator=( const RotaryEncoder &c_ );
 
 }; //RotaryEncoder
 

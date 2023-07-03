@@ -10,17 +10,40 @@
 #define __BUTTON_H__
 
 #include "PinDriver.h"
-#include "InterruptRef.h"
+#include "Interruptible.h"
 
-class Button: public PinDriver, public InterruptRef{
-//functions
+/**
+ * Button that is interruptable.
+ */
+class Button: public PinDriver{
 public:
-	Button(Pio * portButton, int pinButton);
 
-	/* InterruptRef abstract override */
-	void callReference(IRQn interruptNumber, uint32_t flag) override;
+	/**
+	 * Make a button.
+	 *
+	 * \param port_button Pio pointer to port
+	 * \param pin_button pin in Pio port
+	 */
+	Button(Pio * port_button, int pin_button);
+
+	/**
+	 * If button is registered in a interrupt this function gets called
+	 *
+	 * \param interrupt_number called from IRQn.
+	 * \param flag_ interupt flag
+	 */
+	void callReference(IRQn interrupt_number, uint32_t flag_) override;
 	
+	/**
+	 * If the button is pressed
+	 *
+	 * \return bool was the button pressed
+	 */
 	bool wasPressed();
+	
+	/**
+	 * Reset internal button state.
+	 */
 	void resetButton();
 	
 	~Button();

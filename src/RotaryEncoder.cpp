@@ -9,42 +9,34 @@
 #include "RotaryEncoder.h"
 
 // default constructor
-RotaryEncoder::RotaryEncoder(	PinDriver a, IRQn aI,
-								PinDriver b, IRQn bI):
-								rotaryA(a),
-								rotaryB(b),
-								aInterrupt(aI),
-								bInterrupt(bI){
-		bool aState = rotaryA.getStateBool();
-		bool bState = rotaryB.getStateBool();
-		
-		int currentState = 0;
-		
-		if(aState){
-			currentState |= (1 << 0);
-		}
-		
-		if(bState){
-			currentState |= (1 << 1);
-		}
-		
-		last_state = 0;
-		
-// 		if(aState && bState){
-// 			last_state = AandB;
-// 		}else if(aState && !bState){
-// 			last_state = AnotB;
-// 		}else if (!aState && bState){
-// 			last_state = BnotA;
-// 		}
-// 		
-// 		last_state = NONE;
+RotaryEncoder::RotaryEncoder(	PinDriver a, IRQn a_i,
+								PinDriver b, IRQn b_i):
+								rotary_a(a),
+								rotary_b(b),
+								a_interrupt(a_i),
+								b_interrupt(b_i){
+									
+	
+	bool a_state = rotary_a.getStateBool();
+	bool b_state = rotary_b.getStateBool();
+	
+	int current_state = 0;
+	
+	if(a_state){
+		current_state |= (1 << 0);
+	}
+	
+	if(b_state){
+		current_state |= (1 << 1);
+	}
+	
+	last_state = 0;
 }
 
 void RotaryEncoder::callReference(IRQn interruptNumber, uint32_t flag){
 
-	bool a = rotaryA.getStateBool();
-	bool b = rotaryB.getStateBool();
+	bool a = rotary_a.getStateBool();
+	bool b = rotary_b.getStateBool();
 	
 	int current_state = 0;
 	
@@ -65,12 +57,12 @@ void RotaryEncoder::callReference(IRQn interruptNumber, uint32_t flag){
 	
 	if(ts == 7 || ts == 1 || ts == 8 || ts == 14){
 		//Left
-		rotation -= 1;
+		rotation_ -= 1;
 	}
 	
 	if(ts == 11 || ts == 2 || ts == 4 || ts == 13){
 		//Right
-		rotation += 1;
+		rotation_ += 1;
 	}
 	
 		
@@ -92,19 +84,17 @@ void RotaryEncoder::callReference(IRQn interruptNumber, uint32_t flag){
 
 
 int RotaryEncoder::getRotation(){
-	return rotation;
+	return rotation_;
 }	
 
-int RotaryEncoder::getState(){
+int RotaryEncoder::getLastState(){
 	return last_state;
 }
 
 void RotaryEncoder::reset(){
-	//last_state = 0;
-	rotation = 0;
+	rotation_ = 0;
 }
 
 // default destructor
-RotaryEncoder::~RotaryEncoder()
-{
-} //~RotaryEncoder
+RotaryEncoder::~RotaryEncoder(){
+}
