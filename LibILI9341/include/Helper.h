@@ -15,6 +15,8 @@
 #include <cstdio>
 #include <string>
 
+#include "PinDriver.h"
+
 namespace Helper{
 	
 	namespace Time{
@@ -30,6 +32,8 @@ namespace Helper{
 		
 		void delay1_5us(uint32_t us);
 		void delay1_5us(TIME_UNIT_1_5US us);
+		
+		void init();
 	}
 	
 	namespace Debug{
@@ -37,6 +41,8 @@ namespace Helper{
 		void DebugPrintVA(const char * pString, ... );
 		void DebugPrint(const std::string & x);
 		void DebugPrint(char pString);
+		
+		void init();
 	}
 }
 

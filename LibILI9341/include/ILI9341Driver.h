@@ -6,31 +6,22 @@
 
 /** \file ILI9341Driver.h
  * ILI Driver definitions.
- * 
  */
 
 
 #ifndef __ILI9341DRIVER_H__
 #define __ILI9341DRIVER_H__
 
-#include "ILI9341Commands.h"
-
-#include "Helper.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 
-#include "PINDriver.h"
-#include "SPIDriver.h"
+#include "ILI9341Commands.h"
+#include "Helper.h"
+#include "PinDriver.h"
+#include "SpiDriver.h"
 
 //Always in 4-wire 8-bit data serial interface
-//Define memory definitions
-//typedef enum ILI9341Commands{
-	
-//	};
-
-//#define SPI_CSR_SCBR(value) ((SPI_CSR_SCBR_Msk & ((value) << SPI_CSR_SCBR_Pos)))
 
 /**
  * enum to hold sleep mode.
@@ -94,27 +85,27 @@ public:
 	 */
 	ILI9341Driver(	uint width,
 					uint height,
-					PINDriver & chipselect, 
-					PINDriver & dc, 
-					PINDriver & reset,
-					SPIDriver & spi);
+					PinDriver & chipselect, 
+					PinDriver & dc, 
+					PinDriver & reset,
+					SpiDriver & spi);
 
 	/**
 	 * Reset ILI9341 with a hardware reset.
 	 */
-	void HardwareReset();
+	void hardwareReset();
 	
 	/**
 	 * Perform a software reset of the ILI9341.
 	 */
-	void SoftwareReset();
+	void softwareReset();
 	
 	/**
 	 * Set display mode of the display.
 	 *
 	 * \param mode display sleep mode.
 	 */
-	void SetSleepMode(ILI_SLEEP_MODE mode);
+	void setSleepMode(ILI_SLEEP_MODE mode);
 	
 	/**
 	 * Set display rotation.
@@ -128,14 +119,14 @@ public:
 	 * \param cont a bool to set continues mode.
 	 * \param setCASETPASET a bool to set Column and Page to current width and height
 	 */
-	void SetRotation(ILI_ROTATION_MODE mode, bool cont, bool setCASETPASET);
+	void setRotation(ILI_ROTATION_MODE mode, bool cont, bool setCASETPASET);
 	
 	/**
 	 * Send a command.
 	 *
 	 * \param byte a uint8_t to send 8 bits of command data to the display.
 	 */
-	void SendCommand(uint8_t byte);
+	void sendCommand(uint8_t byte);
 	
 	/**
 	 * Send a command with parameters.
@@ -146,41 +137,40 @@ public:
 	 * \param parameterN an integer that holds the number of parameters in the ... .
 	 * \param ... variadic argument list, will be interpreted as uint8_t.
 	 */
-	void SendCommandWithParamter(uint8_t command, int parameterN, ...);
+	void sendCommandWithParamter(uint8_t command, int parameterN, ...);
 	
 	/**
 	 * Send the start of a continues stream of data to ILI9341.
 	 */
-	void SendStartCont();
+	void sendStartCont();
 	
 	/**
 	 * Send the end of a continues stream of data to ILI9341.
 	 */
-	void SendEndCont();
+	void sendEndCont();
 	
 	/**
 	 * Send a command during a continues stream of data.
 	 *
 	 * \param byte an uint8_t that will be send as command.
 	 */
-	void SendCommandCont(uint8_t byte);
+	void sendCommandCont(uint8_t byte);
 	
 	/**
 	 * Send data (1 byte) during a continues stream of data.
 	 *
 	 * \param byte a uint8_t to send as data.
-	 * \return
 	 */
-	void SendDataCont(uint8_t byte);
+	void sendDataCont(uint8_t byte);
 	
 	/**
 	 * Send data (2 bytes) during a continues stream of data.
 	 *
 	 * \param twoBytes a uint16_t that will be send as data.
 	 */
-	inline void SendDataCont16_t(uint16_t twoBytes){
-		SendDataCont(twoBytes >> 8);
-		SendDataCont(twoBytes & 0xFF);
+	inline void sendDataCont16_t(uint16_t twoBytes){
+		sendDataCont(twoBytes >> 8);
+		sendDataCont(twoBytes & 0xFF);
 	}
 	
 	/**
@@ -188,8 +178,8 @@ public:
 	 *
 	 * \param color an ILI_COLORS to be send as data.
 	 */
-	inline void SendDataCont16_t(ILI_COLORS color){
-		SendDataCont16_t((uint16_t)color);
+	inline void sendDataCont16_t(ILI_COLORS color){
+		sendDataCont16_t((uint16_t)color);
 	}
 	
 	
@@ -197,30 +187,112 @@ public:
 	/**
 	 * Display various test patterns on the connected display.
 	 */
-	void SendTestPatternColorBlocks();
+	void sendTestPatternColorBlocks();
 	
 	/**
 	 * Set the width of the connected display.
 	 *
 	 * \param width an uint to set width of display in pixels.
 	 */
-	void SetWidth(uint width);
+	void setWidth(uint width);
 	
 	/**
 	 * Set the height of the connected display.
 	 *
 	 * \param height an uint to set height of display in pixels.
 	 */
-	void SetHeight(uint height);
+	void setHeight(uint height);
+	
+	/**
+	 * Returns max_pixel_count in display
+	 * \return uint value of max_pixel_count
+	 */
+	const uint getMaxPixelCount();
+	
+	/**
+	 * Returns col_start
+	 * \return uint value of col_start
+	 */
+	uint getColStart();
+	
+	/**
+	 * Returns col_end
+	 * \return uint value of col_end
+	 */
+	uint getColEnd();
+	
+	/**
+	 * Returns col_lenght
+	 * \return uint value of col_lenght
+	 */
+	uint getColLenght();
+	
+	/**
+	 * Returns row_start
+	 * \return uint value of row_start
+	 */
+	uint getRowStart();
+	
+	/**
+	 * Returns row_end
+	 * \return uint value of row_end
+	 */
+	uint getRowEnd();
+	
+	/**
+	 * Returns row_lenght
+	 * \return uint value of row_lenght
+	 */
+	uint getRowLenght();
+	
+	//////////////////////////////////////////////////////////////////////////
+	
+	/**
+	 * Set col_start
+	 * \param val uint value to set col_start
+	 */
+	void setColStart(uint val);
+	
+	/**
+	 * Set col_end
+	 * \param val uint value to set col_end
+	 */
+	void setColEnd(uint val);
+	
+	/**
+	 * Set col_lenght
+	 * \param val uint value to set col_lenght
+	 */
+	void setColLenght(uint val);
+	
+	/**
+	 * Set row_start
+	 * \param val uint value to set row_start
+	 */
+	void setRowStart(uint val);
+	
+	/**
+	 * Set row_end
+	 * \param val uint value to set row_end
+	 */
+	void setRowEnd(uint val);
+	
+	/**
+	 * Set row_lenght
+	 * \param val uint value to set row_lenght
+	 */
+	void setRowLenght(uint val);
 	
 	/**
 	 * Default destructor.
 	 */
 	~ILI9341Driver();
+
+private:
 	
-	uint width = ILI9341_WIDTH_X; 
-	uint height = ILI9341_HEIGHT_Y; 
-	uint max_pixel_count = ILI9341_WIDTH_X * ILI9341_HEIGHT_Y;
+	uint width = ILI9341_WIDTH_X;
+	uint height = ILI9341_HEIGHT_Y;
+	const uint max_pixel_count = ILI9341_WIDTH_X * ILI9341_HEIGHT_Y;
 	
 	uint colStart = 0;
 	uint colEnd = 319;
@@ -228,21 +300,15 @@ public:
 	uint rowStart = 0;
 	uint rowEnd = 239;
 	uint rowLenght = 239;
-	
-private:
-	
-	
-
 
 	ILI9341Driver( const ILI9341Driver &c );
 	ILI9341Driver& operator=( const ILI9341Driver &c );
 	
 	//PINS
-	PINDriver & displaySS;
-	PINDriver & displayDC;
-	PINDriver & displayRESET;
-	//Peri SPI
-	SPIDriver & mySPI;
+	PinDriver & displayCS;
+	PinDriver & displayDC;
+	PinDriver & displayRESET;
+	SpiDriver & ili_spi;
 	
 	ILI_SLEEP_MODE currentSleepMode = ILI_SLEEP_MODE::SLEEP_IN;
 	
@@ -250,28 +316,28 @@ private:
 	 * Chip select enable.
 	 */
 	inline void CS_Enable(){
-		displaySS.SetOutput(PIO_PIN_STATE::LOW);
+		displayCS.setOutput(PIO_PIN_STATE::LOW);
 	}
 	
 	/**
 	 * Chip select disable.
 	 */
 	inline void CS_Disable(){
-		displaySS.SetOutput(PIO_PIN_STATE::HIGH);
+		displayCS.setOutput(PIO_PIN_STATE::HIGH);
 	}
 	
 	/**
 	 * Set Data/Command line to data.
 	 */
 	inline void DC_SetData(){
-		displayDC.SetOutput(PIO_PIN_STATE::HIGH);
+		displayDC.setOutput(PIO_PIN_STATE::HIGH);
 	}
 	
 	/**
 	 * Set Data/Command line to command.
 	 */
 	inline void DC_SetCommand(){
-		displayDC.SetOutput(PIO_PIN_STATE::LOW);
+		displayDC.setOutput(PIO_PIN_STATE::LOW);
 	}
 
 }; //ILI9341Driver

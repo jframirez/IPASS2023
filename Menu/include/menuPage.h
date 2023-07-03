@@ -14,23 +14,29 @@
 //#include "ILI9341Driver.h" rewrite to C++, if mixed error will be thrown for C++ specefic include files
 //Use .cpp extension instead
 
+/**
+ * Struct that hold all info for a text box in a menu.
+ */
 struct menuTextBox{
-	uint colStart;// = 50; //set this + bounds check
-	uint colEnd;// = LCD.width - 50; //set this + bounds check
-	uint colLenghtv;
+	uint colStart;		/**< start of column */
+	uint colEnd;		/**< end of column */
+	uint colLenghtv;	/**< length of column */
 	
-	uint rowStart;// = 120; //set this + bounds check
-	uint rowEnd;// = LCD.height; //set this + bounds check
-	uint rowLenght;// = LCD.rowEnd - LCD.rowStart;
+	uint rowStart;		/**< start of row */
+	uint rowEnd;		/**< end of row */
+	uint rowLenght;		/**< length of row */
 };
 
+/**
+ * Struct that hold all info for a menu screen.
+ */
 struct menu{
-	char * name; // Label for this menu
-	const uint bitmapLenght;
-	const uint16_t * menuBitmap;
-	const uint rotation;
-	const struct menuTextBox **menuTextBoxes;
-	uint textBoxesCount;
+	char * name;					/**< C-style string with menu name */
+	const uint bitmapLenght;		/**< lenght of menu bitmap */
+	const uint16_t * menuBitmap;	/**< pointer to menu bitmap */
+	const uint rotation;			/**< enum value ILI_ROTATION */
+	const struct menuTextBox **menuTextBoxes; /**< pointer to array of pointers to menuTextBox */
+	uint textBoxesCount;			/**< number of text boxes */
 };
 
 #endif /* MENUPAGE_H_ */

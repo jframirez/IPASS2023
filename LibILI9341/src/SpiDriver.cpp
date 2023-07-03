@@ -1,24 +1,18 @@
 /* 
-* SPIDriver.cpp
+* SpiDriver.cpp
 *
 * Created: 30-4-2023 04:32:39
 * Author: Jordan
 */
 
 
-#include "../include/SPIDriver.h"
+#include "SpiDriver.h"
 #include "sam3xa.h"
 
 // default constructor
-SPIDriver::SPIDriver(	PINDriver & misoPin,
-						PINDriver & mosiPin,
-						PINDriver & spckPin,
+SpiDriver::SpiDriver(	Spi * spiReg,
 						bool spiCS,
-						bool csDecoder,
-						Spi * spiReg):
-						SPI_MISO(misoPin),
-						SPI_MOSI(mosiPin),
-						SPI_SPCK(spckPin),
+						bool csDecoder):
 						hardwareCS(spiCS),
 						chipSelectDecoder(csDecoder),
 						SPIreg(spiReg){
@@ -30,12 +24,5 @@ SPIDriver::SPIDriver(	PINDriver & misoPin,
 } //SPI_imp
 
 // default destructor
-SPIDriver::~SPIDriver()
-{
-} //~SPI_imp
-
-
-
-//void SPI0_Handler(SPI0_IRQn){
-	
-//}
+SpiDriver::~SpiDriver(){
+} 
