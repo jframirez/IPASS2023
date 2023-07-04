@@ -134,10 +134,10 @@ public:
 	 * Send a command with n parameters to the ILI9341.
 	 *
 	 * \param command an uint8_t that will be send as command.
-	 * \param parameterN an integer that holds the number of parameters in the ... .
+	 * \param parameter_n an integer that holds the number of parameters in the ... .
 	 * \param ... variadic argument list, will be interpreted as uint8_t.
 	 */
-	void sendCommandWithParamter(uint8_t command, int parameterN, ...);
+	void sendCommandWithParamter(uint8_t command, int parameter_n, ...);
 	
 	/**
 	 * Send the start of a continues stream of data to ILI9341.
@@ -166,11 +166,11 @@ public:
 	/**
 	 * Send data (2 bytes) during a continues stream of data.
 	 *
-	 * \param twoBytes a uint16_t that will be send as data.
+	 * \param two_bytes a uint16_t that will be send as data.
 	 */
-	inline void sendDataCont16_t(uint16_t twoBytes){
-		sendDataCont(twoBytes >> 8);
-		sendDataCont(twoBytes & 0xFF);
+	inline void sendDataCont16_t(uint16_t two_bytes){
+		sendDataCont(two_bytes >> 8);
+		sendDataCont(two_bytes & 0xFF);
 	}
 	
 	/**
@@ -294,50 +294,50 @@ private:
 	uint height = ILI9341_HEIGHT_Y;
 	const uint max_pixel_count = ILI9341_WIDTH_X * ILI9341_HEIGHT_Y;
 	
-	uint colStart = 0;
-	uint colEnd = 319;
-	uint colLenght = 319;
-	uint rowStart = 0;
-	uint rowEnd = 239;
-	uint rowLenght = 239;
+	uint col_start = 0;
+	uint col_end = 319;
+	uint col_lenght = 319;
+	uint row_start = 0;
+	uint row_end = 239;
+	uint row_lenght = 239;
 
 	ILI9341Driver( const ILI9341Driver &c );
 	ILI9341Driver& operator=( const ILI9341Driver &c );
 	
 	//PINS
-	PinDriver & displayCS;
-	PinDriver & displayDC;
-	PinDriver & displayRESET;
+	PinDriver & display_cs;
+	PinDriver & display_dc;
+	PinDriver & display_reset;
 	SpiDriver & ili_spi;
 	
-	ILI_SLEEP_MODE currentSleepMode = ILI_SLEEP_MODE::SLEEP_IN;
+	ILI_SLEEP_MODE current_sleep_mode = ILI_SLEEP_MODE::SLEEP_IN;
 	
 	/**
 	 * Chip select enable.
 	 */
-	inline void CS_Enable(){
-		displayCS.setOutput(PIO_PIN_STATE::LOW);
+	inline void ChipSelectEnable(){
+		display_cs.setOutput(PIO_PIN_STATE::LOW);
 	}
 	
 	/**
 	 * Chip select disable.
 	 */
-	inline void CS_Disable(){
-		displayCS.setOutput(PIO_PIN_STATE::HIGH);
+	inline void ChipSelectdisable(){
+		display_cs.setOutput(PIO_PIN_STATE::HIGH);
 	}
 	
 	/**
 	 * Set Data/Command line to data.
 	 */
-	inline void DC_SetData(){
-		displayDC.setOutput(PIO_PIN_STATE::HIGH);
+	inline void DCSetData(){
+		display_dc.setOutput(PIO_PIN_STATE::HIGH);
 	}
 	
 	/**
 	 * Set Data/Command line to command.
 	 */
-	inline void DC_SetCommand(){
-		displayDC.setOutput(PIO_PIN_STATE::LOW);
+	inline void DCSetCommand(){
+		display_dc.setOutput(PIO_PIN_STATE::LOW);
 	}
 
 }; //ILI9341Driver

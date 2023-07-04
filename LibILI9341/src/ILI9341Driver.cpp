@@ -24,9 +24,9 @@ ILI9341Driver::ILI9341Driver(	uint width,
 				PinDriver & dc,
 				PinDriver & reset,
 				SpiDriver & spi):
-				displayCS(chipselect),
-				displayDC(dc),
-				displayRESET(reset),
+				display_cs(chipselect),
+				display_dc(dc),
+				display_reset(reset),
 				ili_spi(spi)
 				{		
 					
@@ -41,7 +41,7 @@ ILI9341Driver::ILI9341Driver(	uint width,
 					Helper::Debug::DebugPrint("ILI DRIVER: Software reset\r\n");
 					softwareReset();
 					
-					CS_Disable();
+					ChipSelectdisable();
 
 					Helper::Debug::DebugPrint("ILI DRIVER: CMD INIT\r\n");
 					
@@ -89,10 +89,10 @@ ILI9341Driver::ILI9341Driver(	uint width,
 }
 
 void ILI9341Driver::sendCommandWithParamter(uint8_t command, int parameterN, ...){
-	CS_Enable();
-	DC_SetCommand();
+	ChipSelectEnable();
+	DCSetCommand();
 	ili_spi.SpiSend(command);
-	DC_SetData();
+	DCSetData();
 
 	va_list args;
 	va_start(args, parameterN);
@@ -104,16 +104,16 @@ void ILI9341Driver::sendCommandWithParamter(uint8_t command, int parameterN, ...
 	
 	va_end(args);
 	
-	CS_Disable();
+	ChipSelectdisable();
 }
 
 void ILI9341Driver::hardwareReset(){
-	CS_Disable();
-	DC_SetCommand();
+	ChipSelectdisable();
+	DCSetCommand();
 	//RESET Display
-	displayRESET.setOutput(PIO_PIN_STATE::LOW);
+	display_reset.setOutput(PIO_PIN_STATE::LOW);
 	Helper::Time::delay1_5us(200 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	displayRESET.setOutput(PIO_PIN_STATE::HIGH);
+	display_reset.setOutput(PIO_PIN_STATE::HIGH);
 	Helper::Time::delay1_5us(200 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 }
 
@@ -122,29 +122,29 @@ void ILI9341Driver::softwareReset(){
 	//If mode sleep out delay 150ms else 5ms minimum
 	Helper::Time::delay1_5us(200 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 	
-	currentSleepMode = ILI_SLEEP_MODE::SLEEP_IN;
+	current_sleep_mode = ILI_SLEEP_MODE::SLEEP_IN;
 	
 }
 
 void ILI9341Driver::setSleepMode(ILI_SLEEP_MODE set){
 	if(set == ILI_SLEEP_MODE::SLEEP_IN){
 		sendCommand(ILI9341CMD_Enter_Sleep_Mode);
-		currentSleepMode = ILI_SLEEP_MODE::SLEEP_IN;
+		current_sleep_mode = ILI_SLEEP_MODE::SLEEP_IN;
 		Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 	}
 	
 	if(set == ILI_SLEEP_MODE::SLEEP_OUT){
 		sendCommand(ILI9341CMD_Sleep_Out);
-		currentSleepMode = ILI_SLEEP_MODE::SLEEP_OUT;
+		current_sleep_mode = ILI_SLEEP_MODE::SLEEP_OUT;
 		Helper::Time::delay1_5us(120 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 	}
 }
 
 void ILI9341Driver::sendCommand(uint8_t byte){
-	CS_Enable();
-	DC_SetCommand();
+	ChipSelectEnable();
+	DCSetCommand();
 	ili_spi.SpiSend(byte);
-	CS_Disable();	
+	ChipSelectdisable();	
 }
 
 void ILI9341Driver::setWidth(uint w){
@@ -155,9 +155,9 @@ void ILI9341Driver::setWidth(uint w){
 	
 	width = w;
 	
-	colStart = 0;
-	colEnd = width - 1;
-	colLenght = colEnd - colStart;
+	col_start = 0;
+	col_end = width - 1;
+	col_lenght = col_end - col_start;
 }
 
 void ILI9341Driver::setHeight(uint h){
@@ -168,9 +168,9 @@ void ILI9341Driver::setHeight(uint h){
 	
 	height = h;
 	
-	rowStart = 0;
-	rowEnd = height - 1;
-	rowLenght = rowEnd - rowStart;
+	row_start = 0;
+	row_end = height - 1;
+	row_lenght = row_end - row_start;
 }
 
 void ILI9341Driver::setRotation(ILI_ROTATION_MODE mode, bool cont, bool setCASETPASET){
@@ -230,18 +230,18 @@ void ILI9341Driver::setRotation(ILI_ROTATION_MODE mode, bool cont, bool setCASET
 }
 
 void ILI9341Driver::sendStartCont(){
-	CS_Enable();
+	ChipSelectEnable();
 }
 
 void ILI9341Driver::sendEndCont(){
-	CS_Disable();
+	ChipSelectdisable();
 }
 void ILI9341Driver::sendCommandCont(uint8_t byte){
-	DC_SetCommand();
+	DCSetCommand();
 	ili_spi.SpiSend(byte);
 }
 void ILI9341Driver::sendDataCont(uint8_t byte){
-	DC_SetData();
+	DCSetData();
 	ili_spi.SpiSend(byte);
 }
 
@@ -250,59 +250,59 @@ const uint ILI9341Driver::getMaxPixelCount(){
 }
 
 uint ILI9341Driver::getColStart(){
-	return colStart;
+	return col_start;
 }
 
 uint ILI9341Driver::getColEnd(){
-	return colEnd;
+	return col_end;
 }
 
 uint ILI9341Driver::getColLenght(){
-	return colLenght;
+	return col_lenght;
 }
 
 uint ILI9341Driver::getRowStart(){
-	return rowStart;
+	return row_start;
 }
 
 uint ILI9341Driver::getRowEnd(){
-	return rowEnd;
+	return row_end;
 }
 
 uint ILI9341Driver::getRowLenght(){
-	return rowLenght;
+	return row_lenght;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 void ILI9341Driver::setColStart(uint val){
-	colStart = val;
+	col_start = val;
 }
 
 void ILI9341Driver::setColEnd(uint val){
-	colEnd = val;
+	col_end = val;
 }
 
 void ILI9341Driver::setColLenght(uint val){
-	colLenght = val;
+	col_lenght = val;
 }
 
 void ILI9341Driver::setRowStart(uint val){
-	rowStart = val;
+	row_start = val;
 }
 
 void ILI9341Driver::setRowEnd(uint val){
-	rowEnd = val;
+	row_end = val;
 }
 
 void ILI9341Driver::setRowLenght(uint val){
-	rowLenght = val;
+	row_lenght = val;
 }
 
 void ILI9341Driver::sendTestPatternColorBlocks(){
 	
 	//ILI_COLORS currentColor = ILI_COLORS::GREEN;
-	std::vector<ILI_COLORS> colorList = {	ILI_COLORS::GREEN,
+	std::vector<ILI_COLORS> color_list = {	ILI_COLORS::GREEN,
 											ILI_COLORS::RED,
 											ILI_COLORS::BLACK,
 											ILI_COLORS::WHITE,
@@ -312,7 +312,7 @@ void ILI9341Driver::sendTestPatternColorBlocks(){
 											ILI_COLORS::YELLOW};
 											
 	auto getVal = [&](int n)	{
-		return colorList[n%colorList.size()];
+		return color_list[n%color_list.size()];
 	};
 	
 	setRotation(ILI_ROTATION_MODE::LANDSCAPE, false, true);

@@ -121,7 +121,7 @@ class P1Decoder{
 		
 		// [0] --- [1] --- [2] --- [n]
 		// P1 --- M-bus0 --- Mbus1 --- Mbus n
-		std::list<CosemChannel*> CosemChannelList;
+		std::list<CosemChannel*> cosem_channel_list;
 
 		/**
 		 * Returns pointer to channel list.
@@ -131,6 +131,18 @@ class P1Decoder{
 		std::list<CosemChannel*> getAllCosemChannels();
 		
 		/**
+		 * Add a new cosem channel if it does not exist.
+		 *
+		 * Returns a pointer to channel n.
+		 * If the channel already exist the previous channel will
+		 * be returned. 
+		 *
+		 * \param n number of the channel in channel list
+		 * \return CosemChannel* pointer to channel
+		 */
+		CosemChannel * addCosemChannel(unsigned int n);
+
+		/**
 		 * Returns pointer to a channel in the channel list.
 		 *
 		 * Match n to a channel if possible, if not found a new channel
@@ -139,16 +151,53 @@ class P1Decoder{
 		 * \param n number of the channel in channel list
 		 * \return CosemChannel* pointer to channel
 		 */
-		CosemChannel * addCosemChannel(unsigned int n);
-
 		CosemChannel * getCosemChannel(unsigned int n);		
-
-		static int OBISCodeSectionToInt(const char * &startSec);
-		static int OBISStringToIntLenght(const char * &startSec, unsigned int n);
-		static int OBISMoveCursorNextLine(const char * &startSec);
-		static int OBISAddObjectToChannel(CosemChannel * oChannel, const char * &startSec, int sec1, int sec2, int sec3);
+		
+		/**
+		 *  Convert obis string to int.
+		 *
+		 * Detects end of obis section and moves pointer past delimiter.
+		 *
+		 * \param start_sec pointer to char array.
+		 * \return int value
+		 */
+		static int ObisCodeSectionToInt(const char * &start_sec);
+		
+		/**
+		 * Convert obis string to int with a specified lenght.
+		 *
+		 * Moves start_sec to end of obis string past delimiter.
+		 *
+		 * \param start_sec pointer to char array.
+		 * \param n lenght of int.
+		 * \return int value
+		 */
+		static int ObisStringToIntLenght(const char * &start_sec, unsigned int n);
+		
+		/**
+		 * Moves start_sec to end of line delimiter.
+		 *
+		 * Line delimiter is '\n' or '!'.
+		 * If delimiter is found pointer is moved past the delimiter. 
+		 * If end of string is reached pointer is moved to end of string.
+		 *
+		 * \param start_sec pointer to char array.
+		 */
+		static void ObisMoveCursorNextLine(const char * &start_sec);
+		
+		/**
+		 * Add object to CosemChannel
+		 *
+		 * \param o_channel pointer to CosemChannel.
+		 * \param start_sec pointer to char array containing Cosem data.
+		 * \param sec_1 obis code section 1.
+		 * \param sec_2 obis code section 2.
+		 * \param sec_3 obis code section 3.
+		 * \return int success.
+		 */
+		static int ObisAddObjectToChannel(CosemChannel * o_channel, const char * &start_sec, int sec_1, int sec_2, int sec_3);
 	
-		std::string deviceIdentifier = "";
+		std::string device_identifier = "";
 
 		P1Decoder( const P1Decoder &c );
 		P1Decoder& operator=( const P1Decoder &c );

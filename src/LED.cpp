@@ -8,11 +8,11 @@
 
 #include "../include/Led.h"
 
-Led::Led(Pio * portLed, int pinLed, LEDTYPE ledType):
-	PinDriver(portLed, pinLed)
+Led::Led(Pio * port_led, int pin_led, LEDTYPE led_type):
+	PinDriver(port_led, pin_led)
 	{
 		inverted = false;
-		switch (ledType){
+		switch (led_type){
 			case LEDTYPE::DEFAULT:
 			case LEDTYPE::INVERTED:
 				inverted = true;

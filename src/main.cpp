@@ -47,6 +47,8 @@
 
 #include "Interruptible.h"
 
+#include "CosemObject.h"
+
 //String encoded for PC testing purpose
 //testP1Telegram is the example telegram from P1 compendium document,
 //The example is wrong in this document, this is the corrected version.
@@ -140,26 +142,26 @@ int main(void)
 	
 	/* Setup leds */
 	Led powerLed(PIOD, 9, Led::LEDTYPE::OPENCOLLECTOR);
-	Led heartbeatLed(PIOD, 10, Led::LEDTYPE::OPENCOLLECTOR);
+	Led heartbeat_led(PIOD, 10, Led::LEDTYPE::OPENCOLLECTOR);
 	Led p1UartReceiveLed(PIOC, 2, Led::LEDTYPE::OPENCOLLECTOR);
 	Led debugLED7(PIOC, 4, Led::LEDTYPE::OPENCOLLECTOR);
 	
 	Helper::Debug::init();
 	
 	/* Rotary encoder setup */
-	Button rotaryButton(PIOB, 27); 
+	Button rotary_button(PIOB, 27); 
 
-	rotaryButton.controllerPioEnable();
-	rotaryButton.setInputFilter(PIO_INPUT_FILTER::GLITCH);
-	rotaryButton.interruptEnable();
-	rotaryButton.enableAdditionalInterruptMode(PIO_LEVEL_SELECT::RISING_EDGE);
+	rotary_button.controllerPioEnable();
+	rotary_button.setInputFilter(PIO_INPUT_FILTER::GLITCH);
+	rotary_button.interruptEnable();
+	rotary_button.enableAdditionalInterruptMode(PIO_LEVEL_SELECT::RISING_EDGE);
 	
-	piobCalls.registerInterrupt(&rotaryButton);
+	piobCalls.registerInterrupt(&rotary_button);
 	
-	RotaryEncoder menuEncoder(	PinDriver(PIOD, 8), PIOD_IRQn, //Arduino due pin 11
+	RotaryEncoder menu_encoder(	PinDriver(PIOD, 8), PIOD_IRQn, //Arduino due pin 11
 								PinDriver(PIOD, 7), PIOD_IRQn);//Arduino due pin 13
 	
-	piodCalls.registerInterrupt(&menuEncoder);
+	piodCalls.registerInterrupt(&menu_encoder);
 
 	NVIC_EnableIRQ(PIOD_IRQn);
 	NVIC_SetPriority(PIOD_IRQn, 2);
@@ -218,30 +220,33 @@ int main(void)
 	//p1Lcd
 	ILI9341Driver p1Lcd(320, 240, DisplayCS, DisplayDC, DisplayRESET, lcdSpi);
 
-	/* Self test */	
-	if(rotaryButton.getState() == PIO_PIN_STATE::HIGH){
+	/* Self test, only if button is hold down at boot */	
+	if(rotary_button.getState() == PIO_PIN_STATE::HIGH){
 		//should return selftest erro code enum
-		SelfTestErrorCode result = SelfTest(p1Lcd, lcdSpi, USART3);
+		SelfTestErrorCode result_ = SelfTest(p1Lcd, lcdSpi, USART3);
 		
-		if(result != SelfTestErrorCode::P1SelfTestPassed){
+		if(result_ != SelfTestErrorCode::P1SelfTestPassed){
 			Helper::Debug::DebugPrint(	"Self test detected an error: " 
-										+ std::to_string(static_cast<int>(result)));
+										+ std::to_string(static_cast<int>(result_)));
 		}else{
 			Helper::Debug::DebugPrint("\r\n - Self test passed - \r\n");
 		}
+		
+		Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	}
+	
 	
 	//Led Flasher blocking
 	for(int i = 0; i < 5; ++i){
 		powerLed.toggle();
-		heartbeatLed.toggle();
+		heartbeat_led.toggle();
 		p1UartReceiveLed.toggle();
 		debugLED7.toggle();
 		Helper::Time::delay1_5us(150 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
 	}
 
 	powerLed.on();
-	heartbeatLed.off();
+	heartbeat_led.off();
 	p1UartReceiveLed.off();
 	debugLED7.off();
 	
@@ -249,7 +254,8 @@ int main(void)
  	MenuManager p1_screen(p1Lcd);
  	
  	p1_screen.setMenu(&menuPageSplash, ILI_COLORS::BLACK);
- 	p1_screen.writeTextLabel(0, font_ubuntumono_10, "TEST PRINT", false);
+ 	p1_screen.writeTextLabel(0, font_ubuntumono_10, "IPASS2023 - P1Decoder", false);
+	p1_screen.writeTextLabel(0, font_ubuntumono_10, "-- Jordan Ramirez --", true);
 	 
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
@@ -276,18 +282,15 @@ int main(void)
 	
 	static int app_state = MAIN_MENU;
 
-	static bool goLeft = false;
-	static bool goRight = false;
-	static bool goButton = false;
-	static int parseList = 0;
+	static bool go_left = false;
+	static bool go_right = false;
+	static bool go_button = false;
+	static int parse_list = 0;
 
 
-	menuEncoder.reset();
-	rotaryButton.resetButton();
-	//rotaryLeft.resetButton();
-	//rotaryRight.resetButton();
-	
-	menuEncoder.reset();
+	menu_encoder.reset();
+	rotary_button.resetButton();
+	menu_encoder.reset();
 	
 	static bool draw_menu = true;
 	
@@ -304,8 +307,8 @@ int main(void)
 	deltaObject dsp_delta = {0, ObisType::PDelivered, ObisType::PReceived};
 	
 	struct displayObject{
-		ObisType type;
-		int channelN;
+		ObisType type_;
+		int channel_n;
 	};
 	
 	static std::vector<displayObject> display_list;
@@ -315,69 +318,69 @@ int main(void)
 		/* Set app state and reset all state variables */
 		auto setAppState = [](int n)	{
 			app_state = n;
-			goLeft = false;
-			goRight = false;
-			goButton = false;
+			go_left = false;
+			go_right = false;
 			
 			//reset state for this menu
 			draw_menu = true;
 		};
 		
+		/* Reset button with block time */
 		auto resetButtonBlock = [](){
 			block_button = true;
 			button_block_time = TC2->TC_CHANNEL[2].TC_CV;
-			goButton = false;
+			go_button = false;
 		};
 		
+		/* Reset rotation every 350ms */
 		if(TC2->TC_CHANNEL[2].TC_CV - blockTime >= (350 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND)){
-			if(menuEncoder.getRotation()){
-				int val = menuEncoder.getRotation();
-				if(val < 0){
+			if(menu_encoder.getRotation()){
+				int val_ = menu_encoder.getRotation();
+				if(val_ < 0){
 					//Left
-					goLeft = true;
+					go_left = true;
 				}else{
 					//Right
-					goRight = true;
+					go_right = true;
 				}
 				
-				menuEncoder.reset();
+				menu_encoder.reset();
 			}			
 			blockTime = TC2->TC_CHANNEL[2].TC_CV;
 		}
 		
+		/* Reset button delay 350ms */
 		if(TC2->TC_CHANNEL[2].TC_CV - button_block_time >= (350 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND)){
 			block_button = false;
 		}
 		
+		/* If button has been pressed it goes into a blocked state */
 		if(!block_button){
-			if(rotaryButton.wasPressed()){
-				goButton = true;
+			/* When unblocked it can be set again */
+			if(rotary_button.wasPressed()){
+				go_button = true;
 				Helper::Debug::DebugPrint("rotaryButton press detected\r\n");
-				rotaryButton.resetButton();
+				rotary_button.resetButton();
 			}
 		}
-		
-	
-		
 			
 		/* Heartbeat on led */	
 		if(TC2->TC_CHANNEL[2].TC_CV - startTime >= (1 * Helper::Time::TIME_UNIT_1_5US::SECOND)){
-			heartbeatLed.toggle();
+			heartbeat_led.toggle();
 			startTime = TC2->TC_CHANNEL[2].TC_CV;			
 		}
 		
 		/* Start uart msg receive */
-		if((USART3->US_CSR & US_CSR_RXRDY)){
-			USART3->US_CR |= US_CR_RETTO;
+		if((USART3->US_CSR & US_CSR_RXRDY)){ //Received a character
+			USART3->US_CR |= US_CR_RETTO; //RESET TIMEOUT timer
 			receive_buffer += static_cast<char>(USART3->US_RHR & 0xFF);
 			//get lower 8 bit, might be implicit in cast to char
 			//p1UartReceiveLed.On();
 		}
 		
 		/* End of message */
-		if(USART3->US_CSR & US_CSR_TIMEOUT){
-			//RESET TIMEOUT;
-			USART3->US_CR |= US_CR_STTTO;
+		if(USART3->US_CSR & US_CSR_TIMEOUT){ //Timeout
+			USART3->US_CR |= US_CR_STTTO;//Set timeout trigger
 			
 			//p1UartReceiveLed.Off();
 			
@@ -385,28 +388,26 @@ int main(void)
 				
 				//Helper::Debug::DebugPrint(receive_buffer);
 				
-				P1Decoder p1msg;
-				int p1_decode_value = p1msg.decodeP1String(receive_buffer.c_str());
+				P1Decoder p1_msg;
+				int p1_decode_value = p1_msg.decodeP1String(receive_buffer.c_str());
 				
 				if(draw_menu){
 					p1_screen.setMenu(&menuPageMain, ILI_COLORS::BLACK, true);
 					draw_menu = false;
 				}
 				
-				if(p1_decode_value == 0){
-					
-					
+				if(p1_decode_value == 0){					
 					
 					int no_reset = false;
 					
 					for(displayObject to_disp: display_list){
-						std::string item_ = p1msg.getCosemStringFromChannel(to_disp.channelN, to_disp.type);
+						std::string item_ = p1_msg.getCosemStringFromChannel(to_disp.channel_n, to_disp.type_);
 						p1_screen.writeTextLabel(0, font_ubuntumono_16, item_, no_reset);
 						no_reset = true;
 					} 
 					
 					if(show_delta){
-						std::string deltaVal = p1msg.getDeltaString(dsp_delta.channel_n, dsp_delta.delta_1, dsp_delta.delta_2);
+						std::string deltaVal = p1_msg.getDeltaString(dsp_delta.channel_n, dsp_delta.delta_1, dsp_delta.delta_2);
 						p1_screen.writeTextLabel(0, font_ubuntumono_16, std::string("DeltaV: ") + deltaVal, no_reset);
 						no_reset = true;	
 					}
@@ -415,6 +416,8 @@ int main(void)
 
 					p1_screen.writeTextLabel(3, font_ubuntumono_16, "D-MENU", false, !mm_selected);
 					
+					
+					/* If no items are displayed on the screen, send this msg */
 					if(!no_reset){
 						p1_screen.writeTextLabel(0, font_ubuntumono_16, "SELECT ITEMS IN MENU", false);
 					}
@@ -439,19 +442,19 @@ int main(void)
 
 		if(app_state == MAIN_MENU){
 			
-			if(goLeft){
-				goLeft = false;
+			if(go_left){
+				go_left = false;
 				
-				mm_selected = !mm_selected;
+				mm_selected = !mm_selected; //Swap selected menu in main menu
 			}
 			
-			if(goRight){
-				goRight = false;
+			if(go_right){
+				go_right = false;
 				
-				mm_selected = !mm_selected;
+				mm_selected = !mm_selected; //Swap selected menu in main menu
 			}
 			
-			if(goButton){
+			if(go_button){
 				resetButtonBlock();
 				
 				if(mm_selected){
@@ -485,23 +488,23 @@ int main(void)
 				p1_screen.setMenu(&menuPageMain, ILI_COLORS::BLACK, true);
 				draw_menu = false;
 				
-				parseList = 0;
+				parse_list = 0;
 				submenu_ = false;
 			}
 			
-			std::string listedString = "ADD ITEM";
+			std::string listed_string = "ADD ITEM";
 			
 			for(displayObject &ref: display_list){
-				getObisTypeString(static_cast<ObisType>(parseList));
-				std::cout << ref.channelN << std::endl;
-				if(	ref.type == static_cast<ObisType>(parseList) &&
-					ref.channelN == channel_){
-						listedString = "REMOVE THIS";
+				Obis::getObisTypeString(static_cast<ObisType>(parse_list));
+				std::cout << ref.channel_n << std::endl;
+				if(	ref.type_ == static_cast<ObisType>(parse_list) &&
+					ref.channel_n == channel_){
+						listed_string = "REMOVE THIS";
 						break;
 					}
 			}
 			
-			p1_screen.writeTextLabel(0, font_ubuntumono_16, listedString, false);
+			p1_screen.writeTextLabel(0, font_ubuntumono_16, listed_string, false);
 			
 			if(selectedMenuInverted(0) && submenu_){
 				p1_screen.setInvertedBackgroundColor(ILI_COLORS::ORANGE);
@@ -519,10 +522,10 @@ int main(void)
 			p1_screen.writeTextLabel(2, font_ubuntumono_16, "ADD/REM", true, selectedMenuInverted(2));
 			p1_screen.writeTextLabel(3, font_ubuntumono_16, "EXIT", true, selectedMenuInverted(3));
 			
-			if(goLeft){
-				goLeft = false;
+			if(go_left){
+				go_left = false;
 				
-				if(!submenu_){
+				if(!submenu_){ //Switch between the different submenus
 					if(!(selected_menu <= 0)){
 						selected_menu -= 1;
 					}else{
@@ -530,11 +533,11 @@ int main(void)
 					}
 				}
 				
-				if(submenu_ && selected_menu == 0){
-					parseList -= 1;
+				if(submenu_ && selected_menu == 0){ //If in submenu , this rotation affects the submenu
+					parse_list -= 1;
 					
-					if(parseList < 0){
-						parseList = 0;
+					if(parse_list < 0){
+						parse_list = 0;
 					}
 				}
 				
@@ -548,8 +551,8 @@ int main(void)
 							
 				
 				
-			}else if(goRight){
-				goRight = false;
+			}else if(go_right){
+				go_right = false;
 				
 				if(!submenu_){
 					if(!(selected_menu >= 3)){
@@ -560,11 +563,11 @@ int main(void)
 				}
 				
 				if(submenu_ && selected_menu == 0){
-					parseList += 1;
+					parse_list += 1;
 					
 					int c = static_cast<int>(ObisType::COUNT);
-					if(parseList >= c){
-						parseList = c -1;
+					if(parse_list >= c){
+						parse_list = c -1;
 					}
 				}		
 				
@@ -579,10 +582,10 @@ int main(void)
 				
 			}
 			
-			p1_screen.writeTextLabel(0, font_ubuntumono_16, getObisTypeString(static_cast<ObisType>(parseList)), true);
+			p1_screen.writeTextLabel(0, font_ubuntumono_16, Obis::getObisTypeString(static_cast<ObisType>(parse_list)), true);
 			p1_screen.clearAfterWrite(0);
 			
-			if(goButton){
+			if(go_button){
 				resetButtonBlock();
 				
 				if(selected_menu == 0){
@@ -603,19 +606,19 @@ int main(void)
 					//Remove obis object
 					std::vector<displayObject>::iterator it = display_list.begin();
 					
-					bool removedItem = false;
+					bool removed_item = false;
 					
 					while(it != display_list.end()){
-						if( it->type == static_cast<ObisType>(parseList) &&
-							it->channelN == channel_){
+						if( it->type_ == static_cast<ObisType>(parse_list) &&
+							it->channel_n == channel_){
 							it = display_list.erase(it);
-							removedItem = true;
+							removed_item = true;
 						}else{
 							++it;
 						}
-					}										if(!removedItem){
+					}										if(!removed_item){
 						//ADD
-						display_list.push_back({static_cast<ObisType>(parseList), channel_});
+						display_list.push_back({static_cast<ObisType>(parse_list), channel_});
 					}
 
 				}
@@ -633,7 +636,7 @@ int main(void)
  			
  			static internalstate in_state = SHOW_DELTA;
 			
-			static bool submenu = false;
+			static bool delta_submenu = false;
 			//static int channel_number = 0;
  			
  			auto deltaMenuSelected = [](internalstate n)	{
@@ -657,48 +660,48 @@ int main(void)
  			
  			p1_screen.writeTextLabel(0, font_ubuntumono_16, "Show delta: " + d, false, deltaMenuSelected(SHOW_DELTA));
  			
-			if(deltaMenuSelected(CHANNEL) && submenu){
+			if(deltaMenuSelected(CHANNEL) && delta_submenu){
 				p1_screen.setInvertedBackgroundColor(ILI_COLORS::ORANGE);
 			}
 			p1_screen.writeTextLabel(0, font_ubuntumono_16, "Channel: " + std::to_string(dsp_delta.channel_n), true, deltaMenuSelected(CHANNEL));
 			p1_screen.setInvertedBackgroundColor(ILI_COLORS::WHITE);
 			 
 			//Make text D1 value of delta 1
-			if(deltaMenuSelected(SELECT_D1) && submenu){
+			if(deltaMenuSelected(SELECT_D1) && delta_submenu){
 				p1_screen.setInvertedBackgroundColor(ILI_COLORS::ORANGE);
 			}
-			p1_screen.writeTextLabel(0, font_ubuntumono_16, std::string("D1: ") + getObisTypeString(dsp_delta.delta_1), true, deltaMenuSelected(SELECT_D1));
+			p1_screen.writeTextLabel(0, font_ubuntumono_16, std::string("D1: ") + Obis::getObisTypeString(dsp_delta.delta_1), true, deltaMenuSelected(SELECT_D1));
 			p1_screen.setInvertedBackgroundColor(ILI_COLORS::WHITE);
  			
 			//Make text D1 value of delta 2
-			if(deltaMenuSelected(SELECT_D2) && submenu){
+			if(deltaMenuSelected(SELECT_D2) && delta_submenu){
 				p1_screen.setInvertedBackgroundColor(ILI_COLORS::ORANGE);
 			}
-			p1_screen.writeTextLabel(0, font_ubuntumono_16, std::string("D2: ") + getObisTypeString(dsp_delta.delta_2), true, deltaMenuSelected(SELECT_D2));
+			p1_screen.writeTextLabel(0, font_ubuntumono_16, std::string("D2: ") + Obis::getObisTypeString(dsp_delta.delta_2), true, deltaMenuSelected(SELECT_D2));
  			p1_screen.setInvertedBackgroundColor(ILI_COLORS::WHITE);
 			 
 			 p1_screen.clearAfterWrite(0);
 			 
  			p1_screen.writeTextLabel(3, font_ubuntumono_16, "EXIT", false, deltaMenuSelected(EXIT));
  			
- 			if(goLeft){
- 				goLeft = false;
+ 			if(go_left){
+ 				go_left = false;
  				
-				if(!submenu){
+				if(!delta_submenu){
 					if(in_state > 0){
 						in_state = static_cast<internalstate>(static_cast<unsigned int>(in_state) - 1 );
 					}
 				}
 				
-				if(submenu && deltaMenuSelected(SELECT_D1)){
-					dsp_delta.delta_1 = getPrevType(dsp_delta.delta_1);
+				if(delta_submenu && deltaMenuSelected(SELECT_D1)){
+					dsp_delta.delta_1 = Obis::getPrevType(dsp_delta.delta_1);
 				}
 				
-				if(submenu && deltaMenuSelected(SELECT_D2)){
-					dsp_delta.delta_2 = getPrevType(dsp_delta.delta_1);
+				if(delta_submenu && deltaMenuSelected(SELECT_D2)){
+					dsp_delta.delta_2 = Obis::getPrevType(dsp_delta.delta_1);
 				}
 				
-				if(submenu && deltaMenuSelected(CHANNEL)){
+				if(delta_submenu && deltaMenuSelected(CHANNEL)){
 					dsp_delta.channel_n -= 1;
 					
 					if(dsp_delta.channel_n < 0){
@@ -708,24 +711,24 @@ int main(void)
  				
  			}
  			
- 			if(goRight){
- 				goRight = false;
+ 			if(go_right){
+ 				go_right = false;
  				
-				if(!submenu){
+				if(!delta_submenu){
 					if(in_state < 4){
 						in_state = static_cast<internalstate>(static_cast<unsigned int>(in_state) + 1 );
 					}
 				}
 				
-				if(submenu && deltaMenuSelected(SELECT_D1)){
-					dsp_delta.delta_1 = getNextType(dsp_delta.delta_1);
+				if(delta_submenu && deltaMenuSelected(SELECT_D1)){
+					dsp_delta.delta_1 = Obis::getNextType(dsp_delta.delta_1);
 				}
  				
-				 if(submenu && deltaMenuSelected(SELECT_D2)){
-					 dsp_delta.delta_2 = getNextType(dsp_delta.delta_1);
+				 if(delta_submenu && deltaMenuSelected(SELECT_D2)){
+					 dsp_delta.delta_2 = Obis::getNextType(dsp_delta.delta_1);
 				 }
 				 
-				 if(submenu && deltaMenuSelected(CHANNEL)){
+				 if(delta_submenu && deltaMenuSelected(CHANNEL)){
 					 dsp_delta.channel_n += 1;
 					 
 					 if(dsp_delta.channel_n > 9){
@@ -734,7 +737,7 @@ int main(void)
 				 }
  			}
  			
- 			if(goButton){
+ 			if(go_button){
  				resetButtonBlock();
 								
 				switch(in_state){
@@ -742,16 +745,16 @@ int main(void)
 						show_delta = !show_delta;
 						break;
 					case SELECT_D1:
-						submenu = !submenu;
+						delta_submenu = !delta_submenu;
 						break;
 					case SELECT_D2:
-						submenu = !submenu;
+						delta_submenu = !delta_submenu;
 						break;
 					case EXIT:
 						setAppState(MAIN_MENU);
 						break;
 					case CHANNEL:
-						submenu = !submenu;
+						delta_submenu = !delta_submenu;
 						break;
 				}
  				
@@ -763,111 +766,114 @@ int main(void)
 
 
 
-SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Telegram){
+SelfTestErrorCode SelfTest(ILI9341Driver & lcd_, SpiDriver & LCDspi, Usart * p1Telegram){
 	Helper::Debug::DebugPrint("Running self test: \r\n");
 	
 	//Menu
-	MenuManager p1Screen(LCD);
+	MenuManager p1_screen(lcd_);
 	
 	//Test pattern display
-	LCD.sendTestPatternColorBlocks();
+	lcd_.sendTestPatternColorBlocks();
 	
 	//Menu
-	MenuManager testMenu(LCD);
+	MenuManager test_menu(lcd_);
 	
-	testMenu.setMenu(&menuPageSelfTest, ILI_COLORS::BLACK);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "Test full image in menu context", false);
-	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	test_menu.setMenu(&menuPageSelfTest, ILI_COLORS::BLACK);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "Test menu switching ... >", false);
+	//test_menu.writeTextLabel(0, font_ubuntumono_10, "Test full image in menu context", false);
+	//Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
-	//testMenu.setMenu(&fullImageTestPage, ILI_COLORS::BLACK);
+	//test_menu.setMenu(&fullImageTestPage, ILI_COLORS::BLACK);
 	
-	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
-	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	//Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
+	//Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
-	testMenu.setMenu(&menuPageSelfTest, ILI_COLORS::BLACK);
+	test_menu.setMenu(&menuPageSelfTest, ILI_COLORS::BLACK);
 	
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "TEST PRINT", false);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "!!!!!!!!!!", true);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "@@@@@@@@@@", true);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "##########", true);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "$$$$$$$$$$", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "TEST PRINT", false);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "!!!!!!!!!!", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "@@@@@@@@@@", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "##########", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "$$$$$$$$$$", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "%%%%%%%%%%", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "%%%%%%%%%%", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "^^^^^^^^^^", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "^^^^^^^^^^", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "&&&&&&&&&&", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "&&&&&&&&&&", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "**********", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "**********", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "((((((((((", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "((((((((((", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "))))))))))", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "))))))))))", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "__________", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "__________", true);
 	Helper::Time::delay1_5us(500 * Helper::Time::TIME_UNIT_1_5US::MILLISECOND);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "++++++++++", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "++++++++++", true);
 		
 	
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
-	testMenu.clearTextLabel(0, ILI_COLORS::BLACK);
+	test_menu.clearTextLabel(0, ILI_COLORS::BLACK);
 	
 	/* P1 decoder test */
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
 	
-	P1Decoder p1test;
+	P1Decoder p1_test;
 	
 	/* Decode a correct string */
-	std::string currentTestP1Telegram = testP1TelegramCapture;
+	std::string current_test_p1_telegram = testP1TelegramCapture;
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
-	int P1DecodeValue = p1test.decodeP1String(currentTestP1Telegram.c_str());
+	test_menu.writeTextLabel(0, font_ubuntumono_10, "P1 Decoder test:", true);
+	int p1_decode_value = p1_test.decodeP1String(current_test_p1_telegram.c_str());
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Decode value : " + std::to_string(P1DecodeValue) + "expected 0"), true);
-	if (P1DecodeValue != 0){
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("Decode value : " + std::to_string(p1_decode_value) + "expected 0"), true);
+	if (p1_decode_value != 0){
 		return SelfTestErrorCode::P1DecodeError;
 	}
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 1/5-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 1/5-"), true);
 
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("ID : " + p1test.getDeviceIdentifier() + "expected \\2M550E-1012"), true);
-	if(p1test.getDeviceIdentifier() == "\\2M550E-1012"){	
-		testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 2/5-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("ID : " + p1_test.getDeviceIdentifier() + "expected \\2M550E-1012"), true);
+	if(p1_test.getDeviceIdentifier() == "\\2M550E-1012"){	
+		test_menu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 2/5-"), true);
 	}
 	
 	/* Test for channel count */
-	int channelCount = p1test.getCosemChannelCount();
+	int channel_count = p1_test.getCosemChannelCount();
 	
-	if (channelCount != 2){
-		testMenu.writeTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
+	if (channel_count != 2){
+		test_menu.writeTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channel_count) + "expected 2"), true);
 		return SelfTestErrorCode::P1DecodeError;
 	}
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channelCount) + "expected 2"), true);
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 3/5-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("Channel count : " + std::to_string(channel_count) + "expected 2"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 3/5-"), true);
 	
 	//PART TWO
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
-	testMenu.clearTextLabel(0, ILI_COLORS::BLACK);
+	test_menu.clearTextLabel(0, ILI_COLORS::BLACK);
 	
 	/* Test for correct amount of objects in channel */
 
-	if(p1test.getCosemChannelSize(0) != 20){
+	if(p1_test.getCosemChannelSize(0) != 20){
 		return SelfTestErrorCode::P1ObjectListError;
 	}
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 4/5-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 4/5-"), true);
 	
-	if(p1test.getCosemChannelSize(1) != 3){
+	/* Test for correct amount of objects in channel and multiple channels work*/
+	
+	if(p1_test.getCosemChannelSize(1) != 3){
 		return SelfTestErrorCode::P1ObjectListError;
 	}
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 5/5-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("-Passed 5/5-"), true);
 	
 	Helper::Time::delay1_5us(5 * Helper::Time::TIME_UNIT_1_5US::SECOND);
 	
-	testMenu.clearTextLabel(0, ILI_COLORS::BLACK);
+	test_menu.clearTextLabel(0, ILI_COLORS::BLACK);
 	
 	
 	/* Testing Cosem objects in channels*/
@@ -876,40 +882,40 @@ SelfTestErrorCode SelfTest(ILI9341Driver & LCD, SpiDriver & LCDspi, Usart * p1Te
 	 * Verify if values in deltaP1 & deltaP2 are correct.
 	 */
 	
-	auto deltaP1String = p1test.getCosemStringFromChannel(0, ObisType::PDelivered);
-	auto deltaP2String = p1test.getCosemStringFromChannel(0, ObisType::PReceived);
+	auto delta_p1_string = p1_test.getCosemStringFromChannel(0, ObisType::PDelivered);
+	auto deltaP2String = p1_test.getCosemStringFromChannel(0, ObisType::PReceived);
 	
-	if(deltaP1String != "Power delivered (+P): 0.368kW"){
+	if(delta_p1_string != "Power delivered (+P): 0.368kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
 	if(deltaP2String != "Power received (-P): 0.128kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 1/3-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 1/3-"), true);
 	
 	/* Test CosemObject: 2
 	 * Verify delta calculation of two objects works.
 	 */
 	
-	auto deltaString = p1test.getDeltaString(0, ObisType::PDelivered, ObisType::PReceived);
+	auto delta_string = p1_test.getDeltaString(0, ObisType::PDelivered, ObisType::PReceived);
 	
 	//std::string deltaCalc = deltaP1->getDelta(deltaP2);
-	if(deltaString != "0.240kW"){
+	if(delta_string != "0.240kW"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 2/3-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 2/3-"), true);
 	
 	/* Test CosemObject: 3
 	 * Verify delta of two objects that can't be calculated
 	 */
-	auto deltaNotString = p1test.getDeltaString(0, ObisType::Version, ObisType::PReceived);
-	if(deltaString != "NaN"){
+	auto delta_not_string = p1_test.getDeltaString(0, ObisType::Version, ObisType::PReceived);
+	if(delta_not_string != "NaN"){
 		return SelfTestErrorCode::P1CosemObjectError;
 	}
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 3/3-"), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("Cosem object <float> Passed 3/3-"), true);
 	
 	
-	testMenu.writeTextLabel(0, font_ubuntumono_10, ("Self Test passed."), true);
+	test_menu.writeTextLabel(0, font_ubuntumono_10, ("Self Test passed."), true);
 	
 	return SelfTestErrorCode::P1SelfTestPassed;
 }
