@@ -366,7 +366,6 @@ Temporary Items
 #Microchip Studio
 *.atsln
 *.componentinfo.xml
-*.cppproj
 
 #Embeded c extensions
 
